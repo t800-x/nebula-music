@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/qt/qml/nebula-music/">
+    <file alias="Main.qml">F:/World Domination/nebula-music/Main.qml</file>
+  </qresource>
+</RCC>
+

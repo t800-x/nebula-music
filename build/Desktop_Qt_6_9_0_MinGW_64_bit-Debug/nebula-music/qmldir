@@ -1,0 +1,5 @@
+module nebula-music
+typeinfo appnebula-music.qmltypes
+prefer :/qt/qml/nebula-music/
+Main 1.0 Main.qml
+
