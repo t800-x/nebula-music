@@ -1,8 +1,70 @@
 import QtQuick
+import "Consts.js" as Consts
+import QtQuick.Controls.Material
+import QtQuick.Layouts
+import Nebula.Media
 
-Window {
-    width: 640
-    height: 480
+ApplicationWindow {
+
+    Component.onCompleted: {
+        MediaPlayer.init()
+    }
+
+    id: root
+    width: 1555
+    height: 820
     visible: true
-    title: qsTr("Hello World")
+    title: "Nebula Music Player"
+    color: Consts.main_bg_color
+    Material.theme: Material.system
+    Material.accent: Consts.accent
+
+    Rectangle {
+        id: nav_container
+        anchors.top: parent.top
+        anchors.left: parent.left
+        color: Consts.nav_color
+        width: parent.width * 0.16077
+        height: parent.height
+
+        Navbar{
+            id: nav
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.topMargin: 10
+        }
+    }
+
+    Seperator {
+        anchors.left: nav_container.right
+        id: nav_br
+        h: parent.height
+        clr: Qt.darker(Consts.nav_color)
+    }
+
+    Player {
+        id: player
+        anchors {
+            top: parent.top
+            left: nav_br.right
+            right: parent.right
+        }
+
+        Seperator {
+            id: player_br
+            anchors.top: player.bottom
+            width: parent.width
+            clr: Qt.lighter(Consts.player_color)
+        }
+    }
+
+
+
+    Songs_page {
+        anchors {
+            top: parent.top
+            left: nav_br.right
+            right: parent.right
+        }
+    }
 }
