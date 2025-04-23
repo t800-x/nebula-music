@@ -42,6 +42,7 @@ qt_add_qml_module(appnebula-music
     QML_FILES Player_controls.qml
     SOURCES
     SOURCES player.h player.cpp
+    SOURCES database.h database.cpp
 
 )
 

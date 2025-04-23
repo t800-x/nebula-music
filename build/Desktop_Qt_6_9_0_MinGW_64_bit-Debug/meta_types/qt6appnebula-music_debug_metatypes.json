@@ -2,6 +2,24 @@
     {
         "classes": [
             {
+                "className": "database",
+                "lineNumber": 6,
+                "object": true,
+                "qualifiedClassName": "database",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "database.h",
+        "outputRevision": 69
+    },
+    {
+        "classes": [
+            {
                 "className": "player",
                 "lineNumber": 9,
                 "object": true,

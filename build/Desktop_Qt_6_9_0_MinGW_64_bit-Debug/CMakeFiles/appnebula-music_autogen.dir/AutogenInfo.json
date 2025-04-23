@@ -914,6 +914,12 @@
 	"HEADERS" : 
 	[
 		[
+			"F:/World Domination/nebula-music/database.h",
+			"MU",
+			"EWIEGA46WW/moc_database.cpp",
+			null
+		],
+		[
 			"F:/World Domination/nebula-music/player.h",
 			"MU",
 			"EWIEGA46WW/moc_player.cpp",
@@ -1026,6 +1032,7 @@
 	"SETTINGS_FILE" : "F:/World Domination/nebula-music/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/CMakeFiles/appnebula-music_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
+		[ "F:/World Domination/nebula-music/database.cpp", "MU", null ],
 		[ "F:/World Domination/nebula-music/main.cpp", "MU", null ],
 		[ "F:/World Domination/nebula-music/player.cpp", "MU", null ]
 	],

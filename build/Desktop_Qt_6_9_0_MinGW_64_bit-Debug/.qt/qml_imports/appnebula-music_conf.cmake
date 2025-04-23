@@ -1,4 +1,4 @@
-set(qml_import_scanner_imports_count 17)
+set(qml_import_scanner_imports_count 19)
 set(qml_import_scanner_import_0 "CLASSNAME;QtQuick2Plugin;LINKTARGET;Qt6::qtquick2plugin;NAME;QtQuick;PATH;C:/Qt/6.9.0/mingw_64/qml/QtQuick;PLUGIN;qtquick2plugin;PLUGINISOPTIONAL;;PREFER;:/qt-project.org/imports/QtQuick/;RELATIVEPATH;QtQuick;TYPE;module;")
 set(qml_import_scanner_import_1 "CLASSNAME;QtQmlPlugin;LINKTARGET;Qt6::qmlplugin;NAME;QtQml;PATH;C:/Qt/6.9.0/mingw_64/qml/QtQml;PLUGIN;qmlplugin;PLUGINISOPTIONAL;;PREFER;:/qt-project.org/imports/QtQml/;RELATIVEPATH;QtQml;TYPE;module;")
 set(qml_import_scanner_import_2 "NAME;QML;PATH;C:/Qt/6.9.0/mingw_64/qml/QML;PREFER;:/qt-project.org/imports/QML/;RELATIVEPATH;QML;TYPE;module;")
@@ -15,5 +15,7 @@ set(qml_import_scanner_import_12 "CLASSNAME;QtQuickControls2BasicStyleImplPlugin
 set(qml_import_scanner_import_13 "CLASSNAME;QmlShapesPlugin;LINKTARGET;Qt6::qmlshapesplugin;NAME;QtQuick.Shapes;PATH;C:/Qt/6.9.0/mingw_64/qml/QtQuick/Shapes;PLUGIN;qmlshapesplugin;PREFER;:/qt-project.org/imports/QtQuick/Shapes/;RELATIVEPATH;QtQuick/Shapes;TYPE;module;")
 set(qml_import_scanner_import_14 "CLASSNAME;QtQmlLabsModelsPlugin;LINKTARGET;Qt6::labsmodelsplugin;NAME;Qt.labs.qmlmodels;PATH;C:/Qt/6.9.0/mingw_64/qml/Qt/labs/qmlmodels;PLUGIN;labsmodelsplugin;PLUGINISOPTIONAL;;PREFER;:/qt-project.org/imports/Qt/labs/qmlmodels/;RELATIVEPATH;Qt/labs/qmlmodels;TYPE;module;")
 set(qml_import_scanner_import_15 "CLASSNAME;QtQuickLayoutsPlugin;LINKTARGET;Qt6::qquicklayoutsplugin;NAME;QtQuick.Layouts;PATH;C:/Qt/6.9.0/mingw_64/qml/QtQuick/Layouts;PLUGIN;qquicklayoutsplugin;PLUGINISOPTIONAL;;PREFER;:/qt-project.org/imports/QtQuick/Layouts/;RELATIVEPATH;QtQuick/Layouts;TYPE;module;")
-set(qml_import_scanner_import_16 "NAME;Consts.js;PATH;F:/World Domination/nebula-music/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/nebula-music/Consts.js;TYPE;javascript;")
+set(qml_import_scanner_import_16 "NAME;Nebula.Media;TYPE;module;")
+set(qml_import_scanner_import_17 "CLASSNAME;QtQuickEffectsPlugin;LINKTARGET;Qt6::effectsplugin;NAME;QtQuick.Effects;PATH;C:/Qt/6.9.0/mingw_64/qml/QtQuick/Effects;PLUGIN;effectsplugin;PLUGINISOPTIONAL;;PREFER;:/qt-project.org/imports/QtQuick/Effects/;RELATIVEPATH;QtQuick/Effects;TYPE;module;")
+set(qml_import_scanner_import_18 "NAME;Consts.js;PATH;F:/World Domination/nebula-music/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/nebula-music/Consts.js;TYPE;javascript;")
 
