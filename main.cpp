@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     db->init();
-    db->add_to_library("D:/Songs/Vampire");
+    //db->add_to_library("D:/Songs/Vampire");
 
     qmlRegisterSingletonInstance<player>("Nebula.Media", 1, 0, "MediaPlayer", mediaplayer);
     qmlRegisterSingletonInstance("Nebula.Database", 1, 0, "Keeper", db);

@@ -2,11 +2,18 @@ import QtQuick
 import QtQuick.Controls.Material
 import "Consts.js" as Consts
 import Nebula.Media
+import Nebula.Database
 
 Rectangle {
     height: parent.height
     width: parent.width
     color: "transparent"
+    property var table: {
+        var x = Keeper.get_table();
+        console.log(JSON.stringify(x))
+        return x
+    }
+
     z: 1
 
     ListView {
@@ -24,27 +31,11 @@ Rectangle {
             // rightMargin: 10
         }
 
-        model: [
-            {
-                song_name: "Timeless",
-                img_source: "test_assets/cover.jpg",
-                artist: "The Weeknd",
-                album: "Hurry Up Tomorrow",
-                path: "F:/Music/Timeless.m4a"
-            },
-
-            {
-                song_name: "Timeless",
-                img_source: "test_assets/cover.jpg",
-                artist: "The Weeknd",
-                album: "Hurry Up Tomorrow",
-                path: "F:/Music/Timeless.m4a"
-            }
-        ]
+        model: table
 
         delegate: Song_item {
-            song_name: modelData.song_name
-            img_source: modelData.img_source
+            song_name: modelData.title
+            img_source: ""
             artist: modelData.artist
             album: modelData.album
             path: modelData.path
