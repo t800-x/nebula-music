@@ -6,6 +6,7 @@ Rectangle {
     id: root
     property alias text: label.text
     property alias iconSource: icon.source
+    property alias visibility: root.visible
     signal clicked
     anchors.horizontalCenter: parent.horizontalCenter
     width: parent.width * 0.9
@@ -16,7 +17,20 @@ Rectangle {
     property bool pressed: false
     property color baseColor: Consts.nav_color
 
-    color: hovered ? adjustBrightness(baseColor, 1.2) : baseColor
+    visible: true
+    color: {
+        var changed_color = adjustBrightness(baseColor, 1.2)
+
+        if (visible && hovered) {
+            return adjustBrightness(changed_color, 1.2)
+        }else if (visible || hovered){
+            return changed_color
+        }else{
+            return baseColor
+        }
+    }
+
+    //(hovered || visible) ? adjustBrightness(baseColor, 1.2) : baseColor
 
     MouseArea {
         id: mouseArea

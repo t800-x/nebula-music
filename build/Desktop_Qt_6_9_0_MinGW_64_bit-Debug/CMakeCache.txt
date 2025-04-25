@@ -409,6 +409,12 @@ Qt6QuickTools_DIR:PATH=C:/Qt/6.9.0/mingw_64/lib/cmake/Qt6QuickTools
 //The directory containing a CMake configuration file for Qt6Quick.
 Qt6Quick_DIR:PATH=C:/Qt/6.9.0/mingw_64/lib/cmake/Qt6Quick
 
+//The directory containing a CMake configuration file for Qt6SqlPrivate.
+Qt6SqlPrivate_DIR:PATH=C:/Qt/6.9.0/mingw_64/lib/cmake/Qt6SqlPrivate
+
+//The directory containing a CMake configuration file for Qt6Sql.
+Qt6Sql_DIR:PATH=C:/Qt/6.9.0/mingw_64/lib/cmake/Qt6Sql
+
 //The directory containing a CMake configuration file for Qt6ZlibPrivate.
 Qt6ZlibPrivate_DIR:PATH=C:/Qt/6.9.0/mingw_64/lib/cmake/Qt6ZlibPrivate
 
@@ -1233,6 +1239,8 @@ QT_FEATURE_spatialaudio:INTERNAL=ON
 QT_FEATURE_spatialaudio_quick3d:INTERNAL=ON
 //Qt feature: sql (from target Qt6::Core)
 QT_FEATURE_sql:INTERNAL=ON
+//Qt feature: sqlmodel (from target Qt6::Sql)
+QT_FEATURE_sqlmodel:INTERNAL=ON
 //Qt feature: sse2 (from target Qt6::Core)
 QT_FEATURE_sse2:INTERNAL=ON
 //Qt feature: sse3 (from target Qt6::Core)

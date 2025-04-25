@@ -4,7 +4,7 @@ project(nebula-music VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia Sql Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -58,7 +58,7 @@ set_target_properties(appnebula-music PROPERTIES
 )
 
 target_link_libraries(appnebula-music
-    PRIVATE Qt6::Quick Qt6::Multimedia
+    PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Sql Qt6::Core
 )
 
 include(GNUInstallDirs)

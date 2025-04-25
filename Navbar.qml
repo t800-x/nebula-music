@@ -20,11 +20,18 @@ Rectangle {
         }
 
         TextField {
-            placeholderText: "Search"
+            placeholderText: focus || text? "" : "Search"
             id: search_field
             width: songs_btn.width * 0.85
             height: songs_btn.height
             anchors.horizontalCenter: parent.horizontalCenter
+
+            background: Rectangle {
+                radius: 4
+                color: Qt.lighter(Consts.nav_color)// ← dark gray when active, darker when inactive
+                border.color: search_field.activeFocus ? Consts.accent : Qt.darker("white")
+                border.width: 1
+            }
         }
 
         Item {
@@ -36,6 +43,7 @@ Rectangle {
             id: songs_btn
             text: "Songs"
             iconSource: "icons/music.svg"
+            visibility: true
         }
     }
 }

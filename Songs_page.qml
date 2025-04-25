@@ -13,15 +13,15 @@ Rectangle {
         id: listview
         width: parent.width
         height: parent.height
-        spacing: 10
+        // spacing: 10
 
         anchors{
             top: parent.top
             left: parent.left
             right: parent.right
-            leftMargin: 10
+            // leftMargin: 10
             topMargin: 30 + Consts.player_height
-            rightMargin: 10
+            // rightMargin: 10
         }
 
         model: [
@@ -48,8 +48,10 @@ Rectangle {
             artist: modelData.artist
             album: modelData.album
             path: modelData.path
+            alt: index % 2 === 0 ? true : false
 
             required property var modelData
+            required property int index
         }
     }
 

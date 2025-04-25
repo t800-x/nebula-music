@@ -3,9 +3,43 @@
         "classes": [
             {
                 "className": "database",
-                "lineNumber": 6,
+                "lineNumber": 14,
                 "object": true,
                 "qualifiedClassName": "database",
+                "signals": [
+                    {
+                        "access": "public",
+                        "index": 0,
+                        "name": "table_changed",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "public",
+                        "index": 1,
+                        "name": "init",
+                        "returnType": "bool"
+                    },
+                    {
+                        "access": "public",
+                        "index": 2,
+                        "name": "get_table",
+                        "returnType": "QVariantList"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "path",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 3,
+                        "name": "add_to_library",
+                        "returnType": "bool"
+                    }
+                ],
                 "superClasses": [
                     {
                         "access": "public",
