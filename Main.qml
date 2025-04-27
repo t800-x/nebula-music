@@ -10,6 +10,15 @@ ApplicationWindow {
         MediaPlayer.init()
     }
 
+    FontLoader {
+        id: cupertino
+        source: "icons/CupertinoIcons.ttf"
+
+        Component.onCompleted: {
+            console.log(cupertino.name)
+        }
+    }
+
     id: root
     width: 1555
     height: 820
@@ -62,7 +71,7 @@ ApplicationWindow {
 
     Songs_page {
         anchors {
-            top: parent.top
+            top: player.bottom
             left: nav_br.right
             right: parent.right
         }

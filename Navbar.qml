@@ -42,7 +42,7 @@ Rectangle {
         Navbar_button {
             id: songs_btn
             text: "Songs"
-            iconSource: "icons/music.svg"
+            // iconSource: "icons/music.svg"
             visibility: true
         }
     }

@@ -2,8 +2,8 @@ import QtQuick
 import "Consts.js" as Consts
 
 Rectangle {
-    property real h: 1.5
-    property real w: 1.5
+    property real h: 1
+    property real w: 1
     required property string clr
 
     color: clr

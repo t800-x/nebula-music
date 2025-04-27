@@ -25,16 +25,7 @@ qt_add_qml_module(appnebula-music
         QML_FILES Navbar_button.qml
 
     RESOURCES
-    icons/add.svg
-    icons/close.svg
-    icons/home.svg
-    icons/search.svg
-    icons/settings.svg
-    icons/music.svg
-    icons/next.svg
-    icons/pause.svg
-    icons/play.svg
-    icons/prev.svg
+    icons/CupertinoIcons.ttf
     test_assets/cover.jpg
     QML_FILES Songs_page.qml
     QML_FILES Player.qml
@@ -43,6 +34,8 @@ qt_add_qml_module(appnebula-music
     SOURCES
     SOURCES player.h player.cpp
     SOURCES database.h database.cpp
+    QML_FILES Songs_header.qml
+    QML_FILES Songs_title.qml
 
 )
 
