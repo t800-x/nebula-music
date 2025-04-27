@@ -22,12 +22,10 @@ Rectangle {
     height: 14 * 1.85
     color: {
         var changed_color = Qt.lighter(Consts.main_bg_color)
-        if (hovered && alt) {
+        if (hovered) {
             return Qt.lighter(changed_color)
         }else if((!hovered) && alt) {
             return changed_color
-        }else if(hovered && (!alt)) {
-            return Qt.lighter(Consts.main_bg_color)
         }else{
             return Consts.main_bg_color
         }

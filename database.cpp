@@ -80,6 +80,8 @@ QVariantList database::query_db(QString query)
 
 QVariantList database::get_table()
 {
+    table = query_db("SELECT * FROM library");
+
     return table;
 }
 
