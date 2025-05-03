@@ -13,7 +13,7 @@ Rectangle {
     // border.color: "red" <-- Debug
 
     Row {
-        spacing: 10
+        spacing: 20
         anchors.verticalCenter: parent.verticalCenter
         id: row
 
@@ -22,13 +22,12 @@ Rectangle {
             width: prev_btn.implicitWidth
             height: prev_btn.implicitHeight
             color: "transparent"
-            Image {
+            Label {
                 id: prev_btn
-                source: "icons/prev.svg"
-                smooth: false
-                asynchronous: true // optional, avoids blocking
-                cache: true        // optional, avoids reloads
-                fillMode: Image.PreserveAspectFit
+                text: ""
+                font.family: "CupertinoIcons"
+                color: "white"
+                font.pointSize: 20
             }
 
             MouseArea {
@@ -44,14 +43,15 @@ Rectangle {
             width: plause_btn.implicitWidth
             height: plause_btn.implicitHeight
             color: "transparent"
-            Image {
+            Label {
                 id: plause_btn
-                source: "icons/pause.svg"
-                smooth: false
-                asynchronous: true // optional, avoids blocking
-                cache: true        // optional, avoids reloads
-                fillMode: Image.PreserveAspectFit
+                text: ""
+                font.family: "CupertinoIcons"
+                color: "white"
+                font.pointSize: 25
+                y: -3
             }
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
@@ -65,14 +65,14 @@ Rectangle {
             width: next_btn.implicitWidth
             height: next_btn.implicitHeight
             color: "transparent"
-            Image {
+            Label {
                 id: next_btn
-                source: "icons/next.svg"
-                smooth: false
-                asynchronous: true // optional, avoids blocking
-                cache: true        // optional, avoids reloads
-                fillMode: Image.PreserveAspectFit
+                text: ""
+                font.family: "CupertinoIcons"
+                color: "white"
+                font.pointSize: 20
             }
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: {

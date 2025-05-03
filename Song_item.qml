@@ -18,7 +18,7 @@ Rectangle {
 
     id: root
 
-    width: parent.width
+    // width: parent.width
     height: 14 * 1.85
     color: {
         var changed_color = Qt.lighter(Consts.main_bg_color)
@@ -33,6 +33,54 @@ Rectangle {
 
     /*alt === false ? Consts.main_bg_color : Qt.lighter(Consts.main_bg_color)*/
 
+    Grid {
+        id: songGrid
+        anchors.fill: parent
+        anchors.leftMargin: 15
+        anchors.rightMargin: 15
+        anchors.topMargin: 4
+        columnSpacing: 20
+        rows: 1
+        columns: 3
+        flow: Grid.LeftToRight
+
+        // Column 1: Song Name (50% width)
+        Label {
+            width: root.width * 0.33
+            text: song_name
+            color: "white"
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignLeft
+            font {
+                pixelSize: 14
+                bold: true
+            }
+        }
+
+        // Column 2: Artist (25% width)
+        Label {
+            width: root.width * 0.33
+            text: artist
+            color: "white"
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignLeft
+            font.pixelSize: 14
+        }
+
+        // Column 3: Album (25% width)
+        Label {
+            width: root.width * 0.33
+            text: album
+            color: "white"
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignLeft
+            font.pixelSize: 14
+        }
+    }
+
     MouseArea {
         id: mouseArea
         anchors.fill: parent
@@ -42,99 +90,12 @@ Rectangle {
         onPressed: root.pressed = true
         onReleased: {
             root.pressed = false
-            root.clicked()   //Expose this signal
+            root.clicked()
             MediaPlayer.set_source(path)
             MediaPlayer.play()
         }
     }
-
-
-    Row {
-        id: song_container
-        spacing: 20
-        anchors.fill: parent
-        anchors.leftMargin: 20
-        anchors.topMargin: 5
-
-
-
-
-
-
-    //     Rectangle {
-    //         id: cover_container
-    //         height: 40
-    //         width: 40
-    //         y: -10
-    //         color: "transparent"
-
-            // property bool hovered: false
-            // property bool pressed: false
-
-    //         Image {
-    //             id: cover
-    //             source: img_source
-    //             anchors.fill: parent
-    //             fillMode: Image.PreserveAspectCrop
-    //             visible: false
-    //         }
-
-    //         // MultiEffect mask for rounded corners
-    //         MultiEffect {
-    //             anchors.fill: cover
-    //             source: cover
-
-    //             maskEnabled: true                           // Turn on masking :contentReference[oaicite:4]{index=4}
-    //             maskSource: roundedMask                      // Use our rectangle as mask :contentReference[oaicite:5]{index=5}
-
-    //             // Anti-aliasing tweaks (optional but recommended)
-    //             maskThresholdMin: 0.5                        // Sharpness threshold :contentReference[oaicite:6]{index=6}
-    //             maskSpreadAtMin: 1.0                         // Edge softness :contentReference[oaicite:7]{index=7}
-    //         }
-
-    //         // Mask definition
-    //         Item {
-    //             id: roundedMask
-    //             width: cover.width
-    //             height: cover.height
-    //             visible: false                               // Hide mask itself
-
-    //             layer.enabled: true                          // Required for maskSource :contentReference[oaicite:8]{index=8}
-    //             layer.smooth: true                           // Smooth out edges :contentReference[oaicite:9]{index=9}
-
-    //             Rectangle {
-    //                 width: parent.width
-    //                 height: parent.height
-    //                 radius: 5                               // Desired corner radius :contentReference[oaicite:10]{index=10}
-    //                 color: "#ff000000"                       // Only alpha channel is used for masking
-    //             }
-    //         }
-
-    //
-    //     }
-
-
-
-
-
-        Label {
-            text: song_name
-            color: "white"
-            font.pixelSize: 14
-        }
-
-        Label {
-            text: album
-            color: "white"
-            font.pixelSize: 14
-        }
-
-        Label {
-            text: artist
-            color: "white"
-            font.pixelSize: 14
-        }
-    }
-
 }
+
+
 

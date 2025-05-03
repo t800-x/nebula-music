@@ -5,7 +5,7 @@ import "Consts.js" as Consts
 Rectangle {
     id: root
     property alias text: label.text
-    property alias iconSource: icon.source
+    // property alias iconSource: icon.source
     property alias visibility: root.visible
     signal clicked
     anchors.horizontalCenter: parent.horizontalCenter
@@ -51,13 +51,22 @@ Rectangle {
         leftPadding: 12
         spacing: 10
 
-        Image {
+        Label {
             id: icon
-            source: ""
-            width: 20
-            height: 20
-            y: +2
+            text: ""
+            font.family: "CupertinoIcons"
+            color: "white"
+            font.pointSize: 14
+            y: +3
         }
+
+        // Image {
+        //     id: icon
+        //     source: ""
+        //     width: 20
+        //     height: 20
+        //     y: +2
+        // }
 
         Label {
             id: label
