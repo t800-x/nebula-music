@@ -1,11 +1,13 @@
 import QtQuick
 import QtQuick.Controls.Material
 import "Consts.js" as Consts
+import Nebula.Media
 
 Rectangle {
     width: row.implicitWidth
     height: parent.height
     color: "transparent"
+    property bool paused: false
     signal prev_song
     signal plause_song
     signal next_song
@@ -45,7 +47,14 @@ Rectangle {
             color: "transparent"
             Label {
                 id: plause_btn
-                text: ""
+                text: {
+                    if (paused) {
+                        return ""
+                    } else {
+                        return ""
+                    }
+                }
+
                 font.family: "CupertinoIcons"
                 color: "white"
                 font.pointSize: 25

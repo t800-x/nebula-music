@@ -37,23 +37,40 @@ Rectangle {
         target: MediaPlayer
         onPlayer_state_changed: {
             console.log("Playback state: " + MediaPlayer.state())
+            if (MediaPlayer.state() === 2){
+                player_controls.paused = true
+            }else if ((MediaPlayer.state() === 1)) {
+                player_controls.paused = false
+            }
+
             if (MediaPlayer.state() === 0) {
                 now_playing.text = "Now Playing: "
             }else {
-                now_playing.text = "Now Playing: " + MediaPlayer.get_title()
+                now_playing.text = "Now Playing: " + MediaPlayer.get_title()    
             }
         }
     }
 
-    Label {
-        id: now_playing
-        anchors {
-            left: player_controls.right
-            verticalCenter: parent.verticalCenter
-            leftMargin: 50
-        }
+    // Label {
+    //     id: now_playing
+    //     anchors {
+    //         left: player_controls.right
+    //         verticalCenter: parent.verticalCenter
+    //         leftMargin: 50
+    //     }
 
-        text: "Now Playing: "
-        color: "white"
+    //     text: "Now Playing: "
+    //     color: "white"
+    // }
+
+    Now_playing {
+        id: now_playing
+        height: 50
+        width: 430
+
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            verticalCenter: parent.verticalCenter
+        }
     }
 }

@@ -64,6 +64,7 @@ ApplicationWindow {
             anchors.top: player.bottom
             width: parent.width
             clr: Qt.lighter(Consts.player_color)
+            height: 1
         }
     }
 

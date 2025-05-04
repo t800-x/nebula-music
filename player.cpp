@@ -14,6 +14,7 @@ void player::init()
     mediaplayer = new QMediaPlayer(this);
     output = new QAudioOutput(this);
     connect(mediaplayer, &QMediaPlayer::playbackStateChanged, this, &player::player_state_changed);
+    connect(mediaplayer, &QMediaPlayer::positionChanged, this, &player::time_changed);
     mediaplayer->setAudioOutput(output);
     output->setVolume(100);
 
@@ -44,10 +45,34 @@ QString player::get_title()
     return title;
 }
 
+QString player::get_artist()
+{
+    QString artist = "";
+    QMediaMetaData meta = mediaplayer->metaData();
+    artist = meta.stringValue(QMediaMetaData::AlbumArtist);
+
+    return artist;
+}
+
 int player::state()
 {
     int st = mediaplayer->playbackState();
     return st;
+}
+
+qint64 player::get_duration()
+{
+    return mediaplayer->duration();
+}
+
+qint64 player::get_position()
+{
+    return mediaplayer->position();
+}
+
+void player::set_position(qint64 position)
+{
+    mediaplayer->setPosition(position);
 }
 
 

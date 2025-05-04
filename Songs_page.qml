@@ -16,7 +16,7 @@ Rectangle {
         return x
     }
 
-    z: 1
+    z: 2
 
     Songs_title {
         id: title
@@ -31,39 +31,43 @@ Rectangle {
 
     Seperator {
         id: title_br
-        width: parent.width
+        height: 1
         clr: Qt.lighter(Consts.player_color)
         anchors.top: title.bottom
+        z: 2
     }
 
-    Seperator {
-        id: header_top
-        width: parent.width
-        clr: Qt.lighter(Consts.player_color)
-        anchors.top: title_br.bottom
-        anchors.topMargin: 30
-    }
+    // Seperator {
+    //     id: header_top
+    //     height: 1
+    //     clr: Qt.lighter(Consts.player_color)
+    //     anchors.top: title_br.bottom
+    //     z: 2
+    // }
 
     Songs_header {
         id: header
         anchors {
-            top: header_top.bottom
+            top: title_br.bottom
             left: parent.left
             right: parent.right
         }
+        z: 2
     }
 
     Seperator {
         id: header_br
-        width: parent.width
+        height: 1
         clr: Qt.lighter(Consts.player_color)
         anchors.top: header.bottom
+        z: 2
     }
 
     ListView {
         id: listview
         width: parent.width
         height: parent.height
+        z: 0
         // spacing: 10
 
         anchors{
