@@ -86,6 +86,7 @@ Rectangle {
             path: modelData.path
             alt: index % 2 === 0 ? false : true
             width: listview.width
+            ind: index
 
             required property var modelData
             required property int index

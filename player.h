@@ -5,6 +5,8 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QMediaMetaData>
+#include <QVariantList>
+#include <QVariantMap>
 
 class player : public QObject
 {
@@ -14,18 +16,29 @@ public:
 
 public slots:
     void init();
-    void set_source(QString source);
-    void play();
+    void play(int index);
     QString get_title();
     QString get_artist();
     int state();
     qint64 get_duration();
     qint64 get_position();
     void set_position(qint64 position);
+    void plause();
+    void next();
+    void prev();
+
+private slots:
+    void media_status_changed(QMediaPlayer::MediaStatus status);
 
 private:
+    void set_queue(int index);
+    void play_current();
+    // void set_source(QUrl source);
     QMediaPlayer *mediaplayer;
     QAudioOutput *output;
+    QVariantList queue;
+    int current_index;
+    QVariantList table;
 
 signals:
     void player_ready();

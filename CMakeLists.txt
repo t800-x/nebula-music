@@ -37,6 +37,8 @@ qt_add_qml_module(appnebula-music
     QML_FILES Songs_header.qml
     QML_FILES Songs_title.qml
     QML_FILES Now_playing.qml
+    SOURCES
+    SOURCES queuemodel.h queuemodel.cpp
 
 )
 

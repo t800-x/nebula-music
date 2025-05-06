@@ -20,16 +20,18 @@ Rectangle {
 
         onPrev_song: {
             console.log("Prev")
+            MediaPlayer.prev()
         }
 
         onPlause_song: {
             console.log("Plause")
             console.log(MediaPlayer.get_title())
-            MediaPlayer.play()
+            MediaPlayer.plause()
         }
 
         onNext_song: {
             console.log("Next")
+            MediaPlayer.next()
         }
     }
 
@@ -41,12 +43,6 @@ Rectangle {
                 player_controls.paused = true
             }else if ((MediaPlayer.state() === 1)) {
                 player_controls.paused = false
-            }
-
-            if (MediaPlayer.state() === 0) {
-                now_playing.text = "Now Playing: "
-            }else {
-                now_playing.text = "Now Playing: " + MediaPlayer.get_title()    
             }
         }
     }

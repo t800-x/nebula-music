@@ -7,6 +7,7 @@ import QtQuick.Effects
 Rectangle {
     required property string song_name
     required property string img_source
+    property int ind
     property bool alt
     property string artist: "Unknown"
     property string album: "Unknown"
@@ -91,8 +92,7 @@ Rectangle {
         onReleased: {
             root.pressed = false
             root.clicked()
-            MediaPlayer.set_source(path)
-            MediaPlayer.play()
+            MediaPlayer.play(ind)
         }
     }
 }
