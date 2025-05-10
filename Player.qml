@@ -37,7 +37,7 @@ Rectangle {
 
     Connections {
         target: MediaPlayer
-        onPlayer_state_changed: {
+        function onPlayer_state_changed() {
             console.log("Playback state: " + MediaPlayer.state())
             if (MediaPlayer.state() === 2){
                 player_controls.paused = true

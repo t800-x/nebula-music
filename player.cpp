@@ -1,7 +1,9 @@
 #include "player.h"
+#include "queuemodel.h"
 #include "database.h"
 #include <QMediaPlayer>
 #include <QMediaMetaData>
+#include <QQmlApplicationEngine>
 #include <QVariantList>
 #include <QVariantMap>
 #include <QAudioOutput>
@@ -12,7 +14,7 @@ player::player(QObject *parent)
 
 }
 
-void player::init()
+void player::init(queuemodel *model)
 {
     mediaplayer = new QMediaPlayer(this);
     output = new QAudioOutput(this);
@@ -20,6 +22,9 @@ void player::init()
     connect(mediaplayer, &QMediaPlayer::positionChanged, this, &player::time_changed);
     mediaplayer->setAudioOutput(output);
     output->setVolume(100);
+
+    this->model = model;
+
 
     //media status signal
     connect(mediaplayer, &QMediaPlayer::mediaStatusChanged, this, &player::media_status_changed);
@@ -95,7 +100,7 @@ void player::plause()
 void player::next()
 {
     current_index++;
-    if (current_index < queue.count())
+    if (current_index < model -> rowCount())
     {
         play_current();
     }
@@ -103,7 +108,7 @@ void player::next()
 
 void player::prev()
 {
-    if (current_index != 0)
+    if (model -> rowCount() != 0)
     {
         current_index--;
         play_current();
@@ -115,7 +120,7 @@ void player::media_status_changed(QMediaPlayer::MediaStatus status)
     if (status == QMediaPlayer::EndOfMedia)
     {
         current_index++;
-        if (current_index < queue.count())
+        if (current_index < model->rowCount())
         {
             play_current();
         }
@@ -127,6 +132,7 @@ void player::set_queue(int index)
     database *db = new database(this);
     table = db->get_table();
 
+    model->clear();
     queue.clear();
 
     for (int i = index; i<table.size(); i++)
@@ -134,13 +140,22 @@ void player::set_queue(int index)
         queue.append(table[i]);
     }
 
+    model->setSongs(queue);
+
     current_index = 0;
+    delete db;
+    db = nullptr;
 }
 
 void player::play_current()
 {
-    QVariantMap song = queue[current_index].toMap();
-    mediaplayer->setSource(QUrl::fromLocalFile(song["path"].toString()));
+
+    QModelIndex index = model->index(current_index, 0);
+    mediaplayer->setSource(QUrl::fromLocalFile(model->data(index, queuemodel::PathRole).toString()));
+
+    // QVariantMap song = queue[current_index].toMap();
+    // mediaplayer->setSource(QUrl::fromLocalFile(song["path"].toString()));
+
     mediaplayer->play();
 }
 

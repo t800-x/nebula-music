@@ -7,6 +7,7 @@
 #include <QMediaMetaData>
 #include <QVariantList>
 #include <QVariantMap>
+#include "queuemodel.h"
 
 class player : public QObject
 {
@@ -15,7 +16,7 @@ public:
     explicit player(QObject *parent = nullptr);
 
 public slots:
-    void init();
+    void init(queuemodel *model);
     void play(int index);
     QString get_title();
     QString get_artist();
@@ -39,6 +40,7 @@ private:
     QVariantList queue;
     int current_index;
     QVariantList table;
+    queuemodel *model;
 
 signals:
     void player_ready();

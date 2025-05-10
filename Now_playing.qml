@@ -24,6 +24,8 @@ Rectangle {
 
     // MultiEffect mask for rounded corners
     MultiEffect {
+        id: cover_render
+
         anchors.fill: cover
         source: cover
 
@@ -32,7 +34,9 @@ Rectangle {
 
         // Anti-aliasing tweaks (optional but recommended)
         maskThresholdMin: 0.5                        // Sharpness threshold :contentReference[oaicite:6]{index=6}
-        maskSpreadAtMin: 1.0                         // Edge softness :contentReference[oaicite:7]{index=7}
+        maskSpreadAtMin: 1.0
+
+        visible: false
     }
 
     // Mask definition
@@ -75,6 +79,16 @@ Rectangle {
         x: (root.width - cover.width) / 2
     }
 
+    Label {
+        id: no_media
+        font.family: "CupertinoIcons"
+        font.pointSize: 20
+        color: "white"
+        text: ""
+        anchors.centerIn: parent
+        visible: true
+    }
+
     Slider {
         id: seekbar
         width: root.width - cover.width - 10
@@ -102,18 +116,35 @@ Rectangle {
         onMoved: {
             MediaPlayer.set_position(seekbar.value)
         }
+
+        visible: false
     }
 
     Connections {
         target: MediaPlayer
-        onPlayer_state_changed: {
+        function onPlayer_state_changed() {
             if (MediaPlayer.state() !== 0) {
+                seekbar.visible = true
+                cover_render.visible = true
+                no_media.visible = false
+                title.visible = true
+                artist.visible = true
+
                 title.text = MediaPlayer.get_title()
                 artist.text = MediaPlayer.get_artist()
             }
+
+            if (MediaPlayer.state() === 0) {
+                seekbar.visible = false
+                cover_render.visible = false
+                no_media.visible = true
+
+                title.visible = false
+                artist.visible = false
+            }
         }
 
-        onTime_changed: {
+        function onTime_changed() {
             seekbar.from = 0
             seekbar.to = MediaPlayer.get_duration()
             seekbar.value = MediaPlayer.get_position()

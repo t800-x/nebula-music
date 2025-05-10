@@ -9,6 +9,7 @@ Rectangle {
     height: parent.height
     width: parent.width
     color: "transparent"
+    clip: true
     id: root
     property var table: {
         var x = Keeper.get_table();

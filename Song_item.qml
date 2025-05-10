@@ -13,6 +13,7 @@ Rectangle {
     property string album: "Unknown"
     required property string path
     signal clicked
+    radius: 5
 
     property bool hovered: false
     property bool pressed: false
@@ -20,11 +21,11 @@ Rectangle {
     id: root
 
     // width: parent.width
-    height: 14 * 1.85
+    height: song_name_label.font.pixelSize * 2
     color: {
-        var changed_color = Qt.lighter(Consts.main_bg_color)
+        var changed_color = "#242424"
         if (hovered) {
-            return Qt.lighter(changed_color)
+            return "#2a2a2a"
         }else if((!hovered) && alt) {
             return changed_color
         }else{
@@ -47,6 +48,7 @@ Rectangle {
 
         // Column 1: Song Name (50% width)
         Label {
+            id: song_name_label
             width: root.width * 0.33
             text: song_name
             color: "white"

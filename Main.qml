@@ -6,17 +6,9 @@ import Nebula.Media
 
 ApplicationWindow {
 
-    Component.onCompleted: {
-        MediaPlayer.init()
-    }
-
     FontLoader {
         id: cupertino
         source: "icons/CupertinoIcons.ttf"
-
-        Component.onCompleted: {
-            console.log(cupertino.name)
-        }
     }
 
     id: root
@@ -48,7 +40,7 @@ ApplicationWindow {
         anchors.left: nav_container.right
         id: nav_br
         h: parent.height
-        clr: Qt.darker(Consts.nav_color)
+        clr: Qt.darker(Consts.player_color)
     }
 
     Player {
@@ -71,9 +63,20 @@ ApplicationWindow {
 
 
     Songs_page {
+        id: songs_page
         anchors {
             top: player.bottom
             left: nav_br.right
+            right: queue.left
+        }
+    }
+
+    Queue {
+        id: queue
+        width: parent.width * 0.17
+        height: parent.height
+        anchors {
+            top: player.bottom
             right: parent.right
         }
     }
