@@ -31,6 +31,7 @@ public:
     Q_INVOKABLE void setSongs(const QVariantList& list);
     Q_INVOKABLE void moveSong(int from, int to);
     Q_INVOKABLE void clear();
+    Q_INVOKABLE void move(int from, int to);
 
 private:
     struct Song { QString title, artist, path, cover, album; };

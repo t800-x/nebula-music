@@ -8,7 +8,7 @@ Rectangle {
     property bool hovered: false
     height: song_title.font.pointSize * 2
     radius: 8
-    color: hovered ? Qt.lighter(Consts.main_bg_color) : Consts.main_bg_color
+    color: Consts.main_bg_color
     visible: true
     clip: true
 

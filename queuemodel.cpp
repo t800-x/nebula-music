@@ -41,6 +41,23 @@ void queuemodel::clear()
     endResetModel();
 }
 
+void queuemodel::move(int from, int to)
+{
+    if(from >= 0 && from < rowCount() && to >= 0 && to < rowCount() && from != to) {
+        if(from == to - 1) { // Allow item moving to the bottom
+            to = from++;
+        }
+
+        beginResetModel();
+        //        beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
+        qInfo() << "model move from: " << from << " to: " << to;
+        m_songs.move(from, to);
+        //        endMoveRows();
+        endResetModel();
+
+    }
+}
+
 QVariant queuemodel::data(const QModelIndex &idx, int role) const
 {
     if (!idx.isValid() || idx.row() < 0 || idx.row() >= m_songs.size())

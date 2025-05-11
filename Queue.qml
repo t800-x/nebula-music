@@ -3,6 +3,7 @@ import QtQuick.Controls.Material
 import Nebula.QueueModel
 import "Consts.js" as Consts
 import QtQuick.Layouts
+import QtQml.Models
 
 Rectangle {
 
@@ -64,24 +65,61 @@ Rectangle {
             horizontalCenter: parent.horizontalCenter
         }
 
-        model: Model
+        displaced: Transition {
+            NumberAnimation {
+                properties: "x,y"
+                easing.type: Easing.OutQuad
+            }
+        }
 
-        delegate: Queue_item {
-            id: cell
-            title: modelData.title
-            width: listview.width * 0.95
+        model: DelegateModel {
+            id: visualModel
+            model: Model
 
-            Component.onCompleted: {
-                try {
-                    anchors.horizontalCenter = parent.horizontalCenter
-                } catch (error){
+            delegate: DropArea {
+                id: delegateRoot
+                required property var modelData
+                property int visualIndex: DelegateModel.itemsIndex
+                property int modelIndex
 
+                height: 48
+                width: listview.width * 0.95
+
+                onEntered: function (drag) {
+                    var from = (drag.source as Queue_tile).visualIndex
+                    var to = tile.visualIndex
+                    visualModel.items.move(from, to)
+                }
+
+                onDropped: function (drag) {
+                    var from = modelIndex
+                    var to = (drag.source as Queue_tile).visualIndex
+                    Model.move(from, to)
+                }
+
+                Queue_tile {
+                    id: tile
+                    height: 48
+                    width: listview.width * 0.95
+                    dragParent: listview
+                    visualIndex: delegateRoot.visualIndex
+                    onPressed: delegateRoot.modelIndex = visualIndex
+                    color: "transparent"
+                    z: 20
+
+                    Queue_item {
+                        title: delegateRoot.modelData.title
+                        Component.onCompleted: {
+                            console.log(delegateRoot.modelData.title)
+                        }
+                        z: 15
+                        anchors.centerIn: parent
+                        width: listview.width * 0.95
+                        // anchors.fill: parent
+                    }
                 }
             }
 
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            required property var modelData
         }
     }
 }

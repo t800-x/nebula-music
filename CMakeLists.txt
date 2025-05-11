@@ -41,6 +41,8 @@ qt_add_qml_module(appnebula-music
     SOURCES queuemodel.h queuemodel.cpp
     QML_FILES Queue.qml
     QML_FILES Queue_item.qml
+    QML_FILES Queue_item_draggable.qml
+    QML_FILES Queue_tile.qml
 
 )
 
