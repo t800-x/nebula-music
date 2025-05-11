@@ -72,6 +72,11 @@ Rectangle {
             }
         }
 
+        /*
+            I don't yet fully understand how it works.
+            https://raymii.org/s/tutorials/Qml_Drag_and_Drop_example_including_reordering_the_Cpp_Model.html
+        */
+
         model: DelegateModel {
             id: visualModel
             model: Model
@@ -82,8 +87,9 @@ Rectangle {
                 property int visualIndex: DelegateModel.itemsIndex
                 property int modelIndex
 
-                height: 48
+                height: queue_item.fontsize * 2
                 width: listview.width * 0.95
+                anchors.horizontalCenter: parent?.horizontalCenter
 
                 onEntered: function (drag) {
                     var from = (drag.source as Queue_tile).visualIndex
@@ -99,7 +105,7 @@ Rectangle {
 
                 Queue_tile {
                     id: tile
-                    height: 48
+                    height: queue_item.fontsize * 2
                     width: listview.width * 0.95
                     dragParent: listview
                     visualIndex: delegateRoot.visualIndex
@@ -108,18 +114,13 @@ Rectangle {
                     z: 20
 
                     Queue_item {
+                        id: queue_item
                         title: delegateRoot.modelData.title
-                        Component.onCompleted: {
-                            console.log(delegateRoot.modelData.title)
-                        }
-                        z: 15
                         anchors.centerIn: parent
                         width: listview.width * 0.95
-                        // anchors.fill: parent
                     }
                 }
             }
-
         }
     }
 }
