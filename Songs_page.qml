@@ -66,8 +66,8 @@ Rectangle {
 
     ListView {
         id: listview
-        width: parent.width
-        height: parent.height
+        // width: parent.width
+        // height: parent.height - header.height - title.height
         z: 0
         // spacing: 10
 
@@ -75,6 +75,8 @@ Rectangle {
             top: header_br.bottom
             left: parent.left
             right: parent.right
+            bottom: parent.bottom
+            bottomMargin: 75
         }
 
         model: table

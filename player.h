@@ -7,7 +7,8 @@
 #include <QMediaMetaData>
 #include <QVariantList>
 #include <QVariantMap>
-#include "queuemodel.h"
+#include "songmodel.h"
+#include "tag_reader.h"
 
 class player : public QObject
 {
@@ -16,7 +17,7 @@ public:
     explicit player(QObject *parent = nullptr);
 
 public slots:
-    void init(queuemodel *model);
+    void init(songmodel *model);
     void play(int index);
     QString get_title();
     QString get_artist();
@@ -40,12 +41,15 @@ private:
     QVariantList queue;
     int current_index;
     QVariantList table;
-    queuemodel *model;
+    songmodel *model;
+    Tag_reader* reader;
+    void wait(int milliseconds);
 
 signals:
     void player_ready();
     void player_state_changed();
     void time_changed();
+    void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
 };
 
 #endif // PLAYER_H

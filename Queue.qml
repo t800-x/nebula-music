@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Material
-import Nebula.QueueModel
+import Nebula.SongModel
 import "Consts.js" as Consts
 import QtQuick.Layouts
 import QtQml.Models

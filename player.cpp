@@ -1,12 +1,17 @@
 #include "player.h"
-#include "queuemodel.h"
+#include "songmodel.h"
 #include "database.h"
+#include "tag_reader.h"
+
 #include <QMediaPlayer>
 #include <QMediaMetaData>
 #include <QQmlApplicationEngine>
 #include <QVariantList>
 #include <QVariantMap>
 #include <QAudioOutput>
+#include <QTimer>
+#include <QEventLoop>
+
 
 player::player(QObject *parent)
     : QObject{parent}
@@ -14,7 +19,7 @@ player::player(QObject *parent)
 
 }
 
-void player::init(queuemodel *model)
+void player::init(songmodel *model)
 {
     mediaplayer = new QMediaPlayer(this);
     output = new QAudioOutput(this);
@@ -24,6 +29,7 @@ void player::init(queuemodel *model)
     output->setVolume(100);
 
     this->model = model;
+    reader = new Tag_reader(this);
 
 
     //media status signal
@@ -42,10 +48,6 @@ void player::play(int index)
 
     set_queue(index);
     play_current();
-
-    // QVariantMap song = queue[current_index].toMap();
-    // mediaplayer->setSource(QUrl::fromLocalFile(song["path"].toString()));
-    // mediaplayer->play();
 }
 
 QString player::get_title()
@@ -151,12 +153,27 @@ void player::play_current()
 {
 
     QModelIndex index = model->index(current_index, 0);
-    mediaplayer->setSource(QUrl::fromLocalFile(model->data(index, queuemodel::PathRole).toString()));
+    mediaplayer->setSource(QUrl::fromLocalFile(model->data(index, songmodel::PathRole).toString()));
 
-    // QVariantMap song = queue[current_index].toMap();
-    // mediaplayer->setSource(QUrl::fromLocalFile(song["path"].toString()));
+    reader->read(model->data(index, songmodel::PathRole).toString().toUtf8().data());
+    reader->get_synced_lyrics(model->data(index, songmodel::PathRole).toString().toUtf8().data());
 
-    mediaplayer->play();
+    //mp3 files dont seem to play nice
+    if (model->data(index, songmodel::PathRole).toString().endsWith(".mp3"))
+    {
+        mediaplayer->play();
+        wait(250);
+        set_position(1);
+    }else {
+        mediaplayer->play();
+    }
+}
+
+void player::wait(int milliseconds)
+{
+    QEventLoop loop;
+    QTimer::singleShot(milliseconds, &loop, &QEventLoop::quit);
+    loop.exec(); // Blocks here until the timer calls quit()
 }
 
 

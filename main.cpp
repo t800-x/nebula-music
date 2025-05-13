@@ -2,26 +2,29 @@
 #include <QQmlApplicationEngine>
 #include "player.h"
 #include "database.h"
-#include "queuemodel.h"
+#include "songmodel.h"
 
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    songmodel main_table = new songmodel(nullptr);
+
     player *mediaplayer = new player(nullptr);
     database *db = new database(nullptr);
-    queuemodel *model = new queuemodel(mediaplayer);
 
     QQmlApplicationEngine engine;
 
     db->init();
-    mediaplayer->init(model);
-    //db->add_to_library("D:/Songs/Vampire");
+    songmodel *queuemodel = new songmodel(mediaplayer);
+    mediaplayer->init(queuemodel);
+    db->add_to_library("D:/Songs/Vampire");
+
 
     qmlRegisterSingletonInstance<player>("Nebula.Media", 1, 0, "MediaPlayer", mediaplayer);
     qmlRegisterSingletonInstance<database>("Nebula.Database", 1, 0, "Keeper", db);
-    qmlRegisterSingletonInstance<queuemodel>("Nebula.QueueModel", 1, 0, "Model", model);
+    qmlRegisterSingletonInstance<songmodel>("Nebula.SongModel", 1, 0, "Model", queuemodel);
 
     QObject::connect(
         &engine,

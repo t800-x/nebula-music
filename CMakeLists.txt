@@ -1,10 +1,17 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(VCPKG_TARGET_TRIPLET "x64-mingw-static" CACHE STRING "")
+set(CMAKE_TOOLCHAIN_FILE "F:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+
 project(nebula-music VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia Sql Core)
+
+find_package(Qt6     REQUIRED COMPONENTS Quick Multimedia Sql Core)
+find_package(utf8cpp CONFIG REQUIRED)
+find_package(ZLIB    REQUIRED)
+find_package(taglib  CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -38,12 +45,12 @@ qt_add_qml_module(appnebula-music
     QML_FILES Songs_title.qml
     QML_FILES Now_playing.qml
     SOURCES
-    SOURCES queuemodel.h queuemodel.cpp
+    SOURCES songmodel.h songmodel.cpp
     QML_FILES Queue.qml
     QML_FILES Queue_item.qml
     QML_FILES Queue_item_draggable.qml
     QML_FILES Queue_tile.qml
-
+    SOURCES tag_reader.h tag_reader.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -58,7 +65,7 @@ set_target_properties(appnebula-music PROPERTIES
 )
 
 target_link_libraries(appnebula-music
-    PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Sql Qt6::Core
+    PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Sql Qt6::Core TagLib::TagLib TagLib::tag utf8::cpp utf8cpp::utf8cpp ZLIB::ZLIB
 )
 
 include(GNUInstallDirs)

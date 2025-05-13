@@ -42,7 +42,7 @@ Rectangle {
 
             AnchorChanges {
                 target: root
-                anchors.horizontalCenter: undefined
+                // anchors.horizontalCenter: undefined
                 anchors.verticalCenter: undefined
             }
         }
