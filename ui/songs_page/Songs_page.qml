@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls.Material
-import "Consts.js" as Consts
+import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import Nebula.Media
 import Nebula.Database
-import QtQuick.Layouts
 
 Rectangle {
     height: parent.height
@@ -11,13 +10,8 @@ Rectangle {
     color: "transparent"
     clip: true
     id: root
-    property var table: {
-        var x = Keeper.get_table();
-        // console.log(JSON.stringify(x))
-        return x
-    }
+    property var table: Keeper.get_all_songs()
 
-    z: 2
 
     Songs_title {
         id: title
@@ -64,35 +58,52 @@ Rectangle {
         z: 2
     }
 
-    ListView {
-        id: listview
-        // width: parent.width
-        // height: parent.height - header.height - title.height
-        z: 0
-        // spacing: 10
-
-        anchors{
-            top: header_br.bottom
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-            bottomMargin: 75
-        }
-
+    DelegateModel {
+        id: dgModel
         model: table
-
         delegate: Song_item {
             song_name: modelData.title
-            img_source: ""
+            img_source: modelData.cover
             artist: modelData.artist
             album: modelData.album
             path: modelData.path
             alt: index % 2 === 0 ? false : true
             width: listview.width
             ind: index
+            all_songs: table
+
+            onAddQueue: {
+                MediaPlayer.add_to_queue(modelData)
+            }
+
+            onPlayNext: {
+                MediaPlayer.play_next(modelData)
+            }
 
             required property var modelData
             required property int index
+        }
+    }
+
+    ListView {
+        id: listview
+        spacing: 4
+        z: 0
+        ScrollBar.vertical: ScrollBar {}
+        anchors {
+            top: header_br.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            bottomMargin: 75
+            leftMargin: 4
+            rightMargin: 4
+            topMargin: 4
+        }
+
+        model: dgModel
+        displaced: Transition {
+            NumberAnimation { properties: "x,y"; easing.type: Easing.OutQuad }
         }
     }
 }

@@ -1,6 +1,8 @@
 #ifndef TAG_READER_H
 #define TAG_READER_H
 
+#include "models/SyncedLyrics.h"
+
 #include <QObject>
 #include <cstdio>
 #include <vector>
@@ -15,6 +17,8 @@
 #include <mpegfile.h>
 #include <synchronizedlyricsframe.h>
 
+class songmodel;
+
 class Tag_reader : public QObject
 {
     Q_OBJECT
@@ -26,19 +30,19 @@ private:
     };
 public:
     explicit Tag_reader(QObject *parent = nullptr);
-    struct SyncedLyrics {
-        std::string text;
-        unsigned int timestamp_ms;
-    };
 
+    songmodel* parse_tags(QString filepath);
     void read(char* file);
-    std::vector<SyncedLyrics> get_synced_lyrics(char* filename);
-    QString get_cover(const QString audiopath);
+
+
 private:
-    std::vector<SyncedLyrics> parse_lyrics(QString lyrics_tag);
-    bool ends_with(const std::string& value, const std::string& suffix);
-    std::vector<Tag_reader::SyncedLyrics> get_lyrics_flac(char *filename);
-    std::vector<Tag_reader::SyncedLyrics> get_lyrics_mp3(char *filename);
+
+    std::vector<QString> get_basic_tags(QString filepath);
+    QString get_cover(const QString filepath);
+    QList<SyncedLyrics> get_synced_lyrics(QString filename);
+    QList<SyncedLyrics> get_lyrics_flac(QString filepath);
+    QList<SyncedLyrics> parse_lyrics(QString lyrics_tag);
+    // std::vector<SyncedLyrics> get_lyrics_mp3(char *filename);
 
 signals:
 };

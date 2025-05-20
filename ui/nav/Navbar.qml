@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Material
-import "Consts.js" as Consts
+import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 
 Rectangle {
 

@@ -1,6 +1,8 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+#include "models/songmodel.h"
+
 #include <QObject>
 #include <QSqlDatabase>
 #include <qsqlquery.h>
@@ -20,14 +22,16 @@ public:
 private:
     QSqlDatabase db;
     QVariantList table;
+    songmodel* all_songs;
 
-    bool create_table();
+    bool create_tables();
     QVariantList query_db(QString query);
     QStringList get_audio_files(const QString &directoryPath);
+    bool insertSongModel(const songmodel* model);
 
 public slots:
     bool init();
-    QVariantList get_table();
+    songmodel* get_all_songs();
     bool add_to_library(QString path);
 
 signals:

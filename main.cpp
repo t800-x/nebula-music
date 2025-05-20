@@ -1,23 +1,21 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include "player.h"
-#include "database.h"
-#include "songmodel.h"
+#include "headers/player.h"
+#include "headers/database.h"
+#include "models/songmodel.h"
 
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    songmodel main_table = new songmodel(nullptr);
-
     player *mediaplayer = new player(nullptr);
     database *db = new database(nullptr);
+    songmodel* queuemodel = new songmodel();
 
     QQmlApplicationEngine engine;
 
     db->init();
-    songmodel *queuemodel = new songmodel(mediaplayer);
     mediaplayer->init(queuemodel);
     db->add_to_library("D:/Songs/Vampire");
 

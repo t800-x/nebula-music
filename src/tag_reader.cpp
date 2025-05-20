@@ -1,4 +1,5 @@
-#include "tag_reader.h"
+#include "headers/tag_reader.h"
+#include "models/songmodel.h"
 
 #include <cstdio>
 #include <tpropertymap.h>
@@ -22,6 +23,7 @@
 #include <QFile>
 #include <QDir>
 #include <QStandardPaths>
+#include <QList>
 
 #include <QDebug>
 
@@ -29,29 +31,72 @@ Tag_reader::Tag_reader(QObject *parent)
     : QObject{parent}
 {}
 
-
-bool Tag_reader::ends_with(const std::string &value, const std::string &suffix)
+songmodel* Tag_reader::parse_tags(QString filepath)
 {
-    return value.size() >= suffix.size() &&
-           value.compare(value.size() - suffix.size(), suffix.size(), suffix) == 0;
-}
+    songmodel* result = new songmodel(this);
 
-void Tag_reader::read(char *file)
-{
-    TagLib::FileRef f(file);
+    qDebug() << "Parsing " << filepath;
 
-    if(!f.isNull() && f.tag()) {
-        TagLib::Tag *tag = f.tag();
-        qDebug() << "Title: " << tag->title().toCString(true);
-        qDebug() << "Artist: " << tag->artist().toCString(true);
-        qDebug() << "Album: " << tag->album().toCString(true);
+    auto basic_tags = get_basic_tags(filepath);
+    qDebug() << "Have basic tags";
+    auto title = basic_tags[0];
+    auto artist = basic_tags[1];
+    auto album = basic_tags[2];
+
+    for (auto tag: basic_tags)
+    {
+        qDebug() << tag;
     }
+
+    qDebug() << "Getting lyrics";
+    auto synced_lyrics = get_synced_lyrics(filepath);
+
+    qDebug() << "Getting album cover";
+    auto cover = get_cover(filepath);
+
+    qDebug() << "Appending to model";
+    result->append(filepath, title, cover, artist, album, synced_lyrics);
+
+    return result;
 }
+
+std::vector<QString> Tag_reader::get_basic_tags(QString filepath)
+{
+    qDebug() << "Begin tag extraction";
+
+    std::vector<QString> result = {};
+    QByteArray file = QFile::encodeName(filepath);
+
+    qDebug() << "Getting taglib object";
+    TagLib::FileRef f(file.constData(), true);
+    qDebug() << "Have object";
+
+    if (!f.isNull() && f.tag())
+    {
+        qDebug() << "Tag not null";
+
+        TagLib::Tag *tag = f.tag();
+        result = {
+            QString(tag->title().toCString()),
+            QString(tag->artist().toCString()),
+            QString(tag->album().toCString())
+        };
+
+        qDebug() << "Added tags to vector";
+        // delete tag;
+    }
+
+    // delete file;
+
+    return result;
+}
+
+
 
 QString Tag_reader::get_cover(const QString audioPath)
 {
     qDebug() << "Opening:" << audioPath;
-    TagLib::FileRef ref(audioPath.toUtf8().constData());
+    TagLib::FileRef ref(QFile::encodeName(audioPath).constData(), true);
     auto *baseFile = ref.file();
     if (!baseFile) {
         qDebug() << "Unsupported format or cannot open file.";
@@ -147,25 +192,23 @@ QString Tag_reader::get_cover(const QString audioPath)
 }
 
 
-std::vector<Tag_reader::SyncedLyrics> Tag_reader::get_synced_lyrics(char *filename)
+QList<SyncedLyrics> Tag_reader::get_synced_lyrics(QString filepath)
 {
+    QList<SyncedLyrics> result = {};
     int filetype = Tag_reader::filetype::unsupported;
-    std::string file(filename);
-    std::vector<Tag_reader::SyncedLyrics> lyrics;
 
-    get_cover(QString(filename));
-
-    if (Tag_reader::ends_with(file, ".flac")) filetype = Tag_reader::filetype::flac;
+    if (filepath.endsWith(".flac")) filetype = Tag_reader::filetype::flac;
 
     switch (filetype) {
     case Tag_reader::filetype::flac:
-        return get_lyrics_flac(filename);
+        result = get_lyrics_flac(filepath);
     }
+    // delete filename;
     return {};
 }
 
-std::vector<Tag_reader::SyncedLyrics> Tag_reader::parse_lyrics(QString lyrics_tag) {
-    std::vector<SyncedLyrics> result;
+QList<SyncedLyrics> Tag_reader::parse_lyrics(QString lyrics_tag) {
+    QList<SyncedLyrics> result;
 
     // Split into lines
     QStringList lines = lyrics_tag.split('\n', Qt::SkipEmptyParts);
@@ -185,10 +228,10 @@ std::vector<Tag_reader::SyncedLyrics> Tag_reader::parse_lyrics(QString lyrics_ta
             int timestamp_ms = (minutes * 60 + seconds) * 1000 + hundredths * 10;
 
             // Remove timestamp part from line
-            std::string lyric_text = std_line.substr(match[0].length());
+            QString lyric_text = QString::fromStdString(std_line.substr(match[0].length()));
 
             // Skip empty lyrics (optional)
-            if (!lyric_text.empty()) {
+            if (!lyric_text.isEmpty()) {
                 qDebug() << timestamp_ms << " " << lyric_text;
                 result.push_back({lyric_text, static_cast<unsigned int>(timestamp_ms)});
             }
@@ -198,10 +241,9 @@ std::vector<Tag_reader::SyncedLyrics> Tag_reader::parse_lyrics(QString lyrics_ta
     return result;
 }
 
-std::vector<Tag_reader::SyncedLyrics> Tag_reader::get_lyrics_flac(char *filename)
+QList<SyncedLyrics> Tag_reader::get_lyrics_flac(QString filepath)
 {
-
-    TagLib::FLAC::File file(filename);
+    TagLib::FLAC::File file(QFile::encodeName(filepath).constData(), true);
     if (!file.isValid()) {
         qDebug() << "Invalid FLAC file!";
     }

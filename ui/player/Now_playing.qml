@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Material
-import "Consts.js" as Consts
+import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import Nebula.Media
 import QtQuick.Effects
 
@@ -12,10 +12,11 @@ Rectangle {
 
     Image {
         id: cover
-        source: "test_assets/cover.jpg"
+        source: ""
         height: 40
         width: 40
         visible: false
+        mipmap: true
 
         anchors.left: parent.left
         anchors.leftMargin: 5
@@ -132,6 +133,8 @@ Rectangle {
 
                 title.text = MediaPlayer.get_title()
                 artist.text = MediaPlayer.get_artist()
+                cover.source = MediaPlayer.get_cover()
+                console.log(cover.source)
             }
 
             if (MediaPlayer.state() === 0) {

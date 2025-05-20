@@ -1,19 +1,25 @@
 import QtQuick
-import QtQuick.Controls.Material
-import "Consts.js" as Consts
+import QtQuick.Controls
+import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import Nebula.Media
 import QtQuick.Effects
 
 Rectangle {
     required property string song_name
     required property string img_source
+    property var all_songs
     property int ind
     property bool alt
     property string artist: "Unknown"
     property string album: "Unknown"
     required property string path
+
     signal clicked
+    signal addQueue
+    signal playNext
+
     radius: 5
+    clip: true
 
     property bool hovered: false
     property bool pressed: false
@@ -82,21 +88,45 @@ Rectangle {
             horizontalAlignment: Text.AlignLeft
             font.pixelSize: 14
         }
+
+        Menu {
+            id: contextMenu
+            MenuItem {
+                text: "Play Next"
+                onTriggered: {
+                    playNext()
+                }
+            }
+
+            MenuItem {
+                text: "Add to Queue"
+                onTriggered: {
+                    addQueue()
+                }
+            }
+        }
     }
 
     MouseArea {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
+        acceptedButtons: Qt.AllButtons
         onEntered: root.hovered = true
         onExited: root.hovered = false
         onPressed: root.pressed = true
         onReleased: {
             root.pressed = false
-            root.clicked()
-            MediaPlayer.play(ind)
+
+            if(mouse.button === Qt.LeftButton) {
+                root.clicked()
+                MediaPlayer.play(all_songs, ind)
+            }else if(mouse.button === Qt.RightButton) {
+                contextMenu.popup()
+            }
         }
     }
+
 }
 
 

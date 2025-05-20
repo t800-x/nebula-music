@@ -84,10 +84,11 @@ QHash<int, QByteArray> songmodel::roleNames() const
     return roles;
 }
 
-bool songmodel::append(QString path, QString title, QString cover, QString artist, QString album, QList<Tag_reader::SyncedLyrics> syncedlyrics)
+bool songmodel::append(QString path, QString title, QString cover, QString artist, QString album, QList<SyncedLyrics> syncedlyrics)
 {
     beginResetModel();
 
+    // qDebug() << "Begin reset model";
     m_songs.append({
         title,
         artist,
@@ -97,7 +98,62 @@ bool songmodel::append(QString path, QString title, QString cover, QString artis
         syncedlyrics
     });
 
+    // qDebug() << "Success";
+
     endResetModel();
+
+    // qDebug() << "End reset model";
 
     return true;
 }
+
+bool songmodel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    if (row < 0 || (row + count) > m_songs.size() || count <= 0)
+        return false;
+
+    beginRemoveRows(parent, row, row + count - 1);
+    for (int i = 0; i < count; ++i)
+        m_songs.removeAt(row);  // always remove at 'row' since the list shifts
+    endRemoveRows();
+
+    return true;
+}
+
+bool songmodel::insertAtTop(QString path, QString title, QString cover, QString artist, QString album, QList<SyncedLyrics> lyrics)
+{
+    beginInsertRows(QModelIndex(), 0, 0);
+    m_songs.prepend({
+        title,
+        artist,
+        path,
+        cover,
+        album,
+        lyrics
+    });
+    endInsertRows();
+
+    return true;
+}
+
+bool songmodel::insert(int row,
+                       const QString &path,
+                       const QString &title,
+                       const QString &cover,
+                       const QString &artist,
+                       const QString &album,
+                       const QList<SyncedLyrics> &lyrics)
+{
+    // Validate insertion index
+    int count = m_songs.size();
+    if (row < 0 || row > count)
+        return false;
+
+    beginInsertRows(QModelIndex(), row, row);
+    // Insert an entry at the given position
+    m_songs.insert(row, Song{title, artist, path, cover, album, lyrics});
+    endInsertRows();
+
+    return true;
+}
+

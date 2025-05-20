@@ -1,13 +1,14 @@
 import QtQuick
 import QtQuick.Controls.Material
-import Nebula.SongModel
-import "Consts.js" as Consts
+import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import QtQuick.Layouts
 import QtQml.Models
+import Nebula.Media
 
 Rectangle {
 
     id: root
+    property var song_model: MediaPlayer.get_queue()
     color: Consts.player_color
 
     Seperator {
@@ -43,15 +44,6 @@ Rectangle {
         anchors.topMargin: 20
     }
 
-    // Queue_item {
-    //     title: "Test"
-    //     anchors {
-    //         top: label_br.bottom
-    //         horizontalCenter: parent.horizontalCenter
-    //         topMargin: 20
-    //     }
-    // }
-
     ListView {
         id: listview
         width: parent.width
@@ -79,8 +71,7 @@ Rectangle {
 
         model: DelegateModel {
             id: visualModel
-            model: Model
-
+            model: song_model
             delegate: DropArea {
                 id: delegateRoot
                 required property var modelData
@@ -100,7 +91,7 @@ Rectangle {
                 onDropped: function (drag) {
                     var from = modelIndex
                     var to = (drag.source as Queue_tile).visualIndex
-                    Model.move(from, to)
+                    MediaPlayer.move(from, to)
                 }
 
                 Queue_tile {

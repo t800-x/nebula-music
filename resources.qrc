@@ -1,9 +1,5 @@
 <RCC>
-    <qresource prefix="/res">
-        <file>icons/add.svg</file>
-        <file>icons/close.svg</file>
-        <file>icons/home.svg</file>
-        <file>icons/search.svg</file>
-        <file>icons/settings.svg</file>
-    </qresource>
+  <qresource prefix="/qt/qml/nebula-music">
+    <file>Consts.js</file>
+  </qresource>
 </RCC>
