@@ -21,7 +21,8 @@ qt_add_executable(appnebula-music
 
 target_include_directories(appnebula-music
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui
 )
 
 qt_add_qml_module(appnebula-music
@@ -29,39 +30,38 @@ qt_add_qml_module(appnebula-music
     VERSION 1.0
     QML_FILES
         Main.qml
-        QML_FILES
-        QML_FILES Consts.js
-        QML_FILES ui/nav/Navbar.qml
-        RESOURCES
-        QML_FILES ui/utils/Seperator.qml
-        QML_FILES ui/nav/Navbar_button.qml
+        Consts.js
+        EventBus.qml
+        test.qml
 
-    RESOURCES
-    icons/CupertinoIcons.ttf
-    QML_FILES ui/songs_page/Songs_page.qml
-    QML_FILES ui/player/Player.qml
-    QML_FILES ui/songs_page/Song_item.qml
-    QML_FILES ui/player/Player_controls.qml
+        ui/nav/Navbar.qml
+        ui/nav/Navbar_button.qml
+
+        ui/utils/Acrylic.qml
+        ui/utils/Acrylic_native.qml
+        ui/utils/Seperator.qml
+        ui/utils/CustomButton.qml
+
+        ui/player/Player.qml
+        ui/player/Player_controls.qml
+        ui/player/Now_playing.qml
+
+        ui/songs_page/Songs_page.qml
+        ui/songs_page/Songs_header.qml
+        ui/songs_page/Songs_title.qml
+        ui/songs_page/Song_item.qml
+
+        ui/queue/Queue.qml
+        ui/queue/Queue_item.qml
+        ui/queue/Queue_tile.qml
     SOURCES
-    SOURCES src/headers/player.h src/player.cpp
-    SOURCES src/headers/database.h src/database.cpp
-    QML_FILES ui/songs_page/Songs_header.qml
-    QML_FILES ui/songs_page/Songs_title.qml
-    QML_FILES ui/player/Now_playing.qml
-    SOURCES
-    SOURCES src/models/songmodel.h src/models/songmodel.cpp
-    QML_FILES ui/queue/Queue.qml
-    QML_FILES ui/queue/Queue_item.qml
-    QML_FILES
-    QML_FILES ui/queue/Queue_tile.qml
-    SOURCES src/headers/tag_reader.h src/tag_reader.cpp
-    SOURCES src/models/SyncedLyrics.h
-    QML_FILES test.qml
-    QML_FILES
-    QML_FILES ui/utils/Acrylic.qml
+        src/player.cpp src/headers/player.h
+        src/database.cpp src/headers/database.h
+        src/tag_reader.cpp src/headers/tag_reader.h
+        src/models/songmodel.cpp src/models/songmodel.h
+        src/models/SyncedLyrics.h
     RESOURCES
-    RESOURCES
-    QML_FILES ui/utils/Acrylic_native.qml
+        icons/CupertinoIcons.ttf
 )
 
 qt6_add_resources(appnebula-music resources.qrc)
@@ -70,7 +70,7 @@ qt6_add_resources(appnebula-music resources.qrc)
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 set_target_properties(appnebula-music PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appnebula-music
+    #    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appnebula-music
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE

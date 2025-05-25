@@ -8,32 +8,59 @@ Rectangle {
     color: Consts.player_color
     height: Consts.player_height
     width: parent.width
+    id: root
+    property var blursource
     z: 5
 
-    Player_controls {
-        id: player_controls
+    Rectangle {
+        color: "transparent"
+        // border.color: "red"
         anchors {
-            verticalCenter: parent.verticalCenter
+            top: parent.top
             left: parent.left
-            leftMargin: 55
+            right: now_playing.left
+            bottom: parent.bottom
         }
 
-        onPrev_song: {
-            console.log("Prev")
-            MediaPlayer.prev()
+        Rectangle {
+            height: parent.height
+            width: parent.width * 0.75
+            color: "transparent"
+            // border.color: "red"
+            anchors {
+                top: parent.top
+                left: parent.left
+                bottom: parent.bottom
+            }
+
+
+            Player_controls {
+                id: player_controls
+                anchors {
+                    centerIn: parent
+                }
+
+                onPrev_song: {
+                    console.log("Prev")
+                    MediaPlayer.prev()
+                }
+
+                onPlause_song: {
+                    console.log("Plause")
+                    console.log(MediaPlayer.get_title())
+                    MediaPlayer.plause()
+                }
+
+                onNext_song: {
+                    console.log("Next")
+                    MediaPlayer.next()
+                }
+            }
         }
 
-        onPlause_song: {
-            console.log("Plause")
-            console.log(MediaPlayer.get_title())
-            MediaPlayer.plause()
-        }
-
-        onNext_song: {
-            console.log("Next")
-            MediaPlayer.next()
-        }
     }
+
+
 
     Connections {
         target: MediaPlayer
@@ -47,18 +74,6 @@ Rectangle {
         }
     }
 
-    // Label {
-    //     id: now_playing
-    //     anchors {
-    //         left: player_controls.right
-    //         verticalCenter: parent.verticalCenter
-    //         leftMargin: 50
-    //     }
-
-    //     text: "Now Playing: "
-    //     color: "white"
-    // }
-
     Now_playing {
         id: now_playing
         height: 50
@@ -69,4 +84,6 @@ Rectangle {
             verticalCenter: parent.verticalCenter
         }
     }
+
+
 }

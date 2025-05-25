@@ -10,74 +10,128 @@ Rectangle {
     // border.color: "red"
     radius: 5
 
-    Image {
-        id: cover
-        source: ""
+    Rectangle {
+        id: cover_container
         height: 40
-        width: 40
-        visible: false
-        mipmap: true
+        width: 45
+        color: "transparent"
+        anchors{
+            left: parent.left
+            verticalCenter: parent.verticalCenter
+            leftMargin: 5
+            right: data_container.left
+        }
 
-        anchors.left: parent.left
-        anchors.leftMargin: 5
-        anchors.verticalCenter: parent.verticalCenter
-    }
+        Image {
+            id: cover
+            source: ""
+            visible: false
+            mipmap: true
 
-    // MultiEffect mask for rounded corners
-    MultiEffect {
-        id: cover_render
+            anchors.fill: parent
+        }
 
-        anchors.fill: cover
-        source: cover
+        // MultiEffect mask for rounded corners
+        MultiEffect {
+            id: cover_render
 
-        maskEnabled: true                           // Turn on masking :contentReference[oaicite:4]{index=4}
-        maskSource: roundedMask                      // Use our rectangle as mask :contentReference[oaicite:5]{index=5}
+            anchors.fill: cover
+            source: cover
 
-        // Anti-aliasing tweaks (optional but recommended)
-        maskThresholdMin: 0.5                        // Sharpness threshold :contentReference[oaicite:6]{index=6}
-        maskSpreadAtMin: 1.0
+            maskEnabled: true                           // Turn on masking :contentReference[oaicite:4]{index=4}
+            maskSource: roundedMask                      // Use our rectangle as mask :contentReference[oaicite:5]{index=5}
 
-        visible: false
-    }
+            // Anti-aliasing tweaks (optional but recommended)
+            maskThresholdMin: 0.5                        // Sharpness threshold :contentReference[oaicite:6]{index=6}
+            maskSpreadAtMin: 1.0
 
-    // Mask definition
-    Item {
-        id: roundedMask
-        width: cover.width
-        height: cover.height
-        visible: false                               // Hide mask itself
+            visible: false
+        }
 
-        layer.enabled: true                          // Required for maskSource :contentReference[oaicite:8]{index=8}
-        layer.smooth: true                           // Smooth out edges :contentReference[oaicite:9]{index=9}
+        // Mask definition
+        Item {
+            id: roundedMask
+            width: cover.width
+            height: cover.height
+            visible: false                               // Hide mask itself
 
-        Rectangle {
-            width: parent.width
-            height: parent.height
-            radius: 5                               // Desired corner radius :contentReference[oaicite:10]{index=10}
-            color: "#ff000000"                       // Only alpha channel is used for masking
+            layer.enabled: true                          // Required for maskSource :contentReference[oaicite:8]{index=8}
+            layer.smooth: true                           // Smooth out edges :contentReference[oaicite:9]{index=9}
+
+            Rectangle {
+                width: parent.width
+                height: parent.height
+                radius: 5                               // Desired corner radius :contentReference[oaicite:10]{index=10}
+                color: "#ff000000"                       // Only alpha channel is used for masking
+            }
         }
     }
 
-    Label {
-        id: title
-        text: ""
-        color: "white"
-        font.pixelSize: 13
-        font.bold: true
-        x: (root.width - cover.width) / 2
-        anchors.top: parent.top
-        anchors.topMargin: 5
-    }
+    Rectangle {
+        id: data_container
+        color: "transparent"
+        // border.color: "red"
+        anchors {
+            left: cover_container.right
+            right: parent.right
+            top: parent.top
+            bottom: parent.bottom
+        }
 
-    Label {
-        id: artist
-        text: ""
-        color: "white"
-        font.pixelSize: 12
 
-        anchors.top: title.bottom
-        anchors.topMargin: 1
-        x: (root.width - cover.width) / 2
+        Label {
+            id: title
+            text: ""
+            color: "white"
+            font.pixelSize: 13
+            font.bold: true
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 5
+        }
+
+        Label {
+            id: artist
+            text: ""
+            color: "white"
+            font.pixelSize: 12
+
+            anchors.top: title.bottom
+            anchors.topMargin: 1
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+
+
+
+        Slider {
+            id: seekbar
+            width: root.width - cover.width - 10
+            height: 10 // Explicit height to reduce space
+            anchors {
+                bottom: parent.bottom
+                bottomMargin: 1 // Adds space from the bottom
+                horizontalCenter: parent.horizontalCenter
+            }
+
+            // Custom handle
+            handle: Rectangle {
+                x: seekbar.leftPadding + seekbar.visualPosition * (seekbar.availableWidth - width)
+                y: seekbar.topPadding + (seekbar.availableHeight - height) / 2
+                implicitWidth: 10 // Smaller width
+                implicitHeight: 10 // Smaller height
+                radius: 6 // Makes it circular
+                color: "transparent"
+            }
+
+            from: 0
+            to: 69
+
+            onMoved: {
+                MediaPlayer.set_position(seekbar.value)
+            }
+
+            visible: false
+        }
     }
 
     Label {
@@ -88,37 +142,6 @@ Rectangle {
         text: ""
         anchors.centerIn: parent
         visible: true
-    }
-
-    Slider {
-        id: seekbar
-        width: root.width - cover.width - 10
-        height: 10 // Explicit height to reduce space
-        anchors {
-            bottom: parent.bottom
-            left: parent.left
-            bottomMargin: 1 // Adds space from the bottom
-            leftMargin: 47
-        }
-
-        // Custom handle
-        handle: Rectangle {
-            x: seekbar.leftPadding + seekbar.visualPosition * (seekbar.availableWidth - width)
-            y: seekbar.topPadding + (seekbar.availableHeight - height) / 2
-            implicitWidth: 10 // Smaller width
-            implicitHeight: 10 // Smaller height
-            radius: 6 // Makes it circular
-            color: "transparent"
-        }
-
-        from: 0
-        to: 69
-
-        onMoved: {
-            MediaPlayer.set_position(seekbar.value)
-        }
-
-        visible: false
     }
 
     Connections {

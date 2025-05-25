@@ -4,6 +4,7 @@ import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import QtQuick.Layouts
 import QtQml.Models
 import Nebula.Media
+import "../utils/Seperator.qml"
 
 Rectangle {
 
@@ -15,15 +16,14 @@ Rectangle {
         id: br
         h: parent.height
         anchors.left: root.left
-        clr: Qt.lighter(Consts.player_color)
         z: 5
     }
 
     Label {
         id: playing_next_label
-        text: "Playing Next: "
+        text: "Up Next"
         font {
-            pointSize: 18
+            pointSize: 10
             bold: true
         }
         color: "white"
@@ -31,17 +31,30 @@ Rectangle {
         anchors {
             top: parent.top
             left: br.right
-            margins: 20
+            margins: 7
         }
+    }
+
+    CustomButton {
+        text: "Clear"
+
+        anchors {
+            right: parent.right
+            top: parent.top
+            rightMargin: 7
+            topMargin: 5
+        }
+
+        onClicked: console.log("Clear")
     }
 
     Seperator {
         id: label_br
         w: root.width
-        clr: Qt.lighter(Qt.lighter(Consts.player_color))
+        // clr: Qt.lighter(Qt.lighter(Consts.player_color))
         anchors.top: playing_next_label.bottom
         anchors.left: root.left
-        anchors.topMargin: 20
+        anchors.topMargin: 7
     }
 
     ListView {

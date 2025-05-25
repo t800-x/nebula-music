@@ -3,7 +3,6 @@ import "Consts.js" as Consts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
-// import Nebula.Media
 
 ApplicationWindow {
     id: root
@@ -49,6 +48,7 @@ ApplicationWindow {
 
         Player {
             id: player
+            blursource: allContent
             anchors {
                 top: parent.top
                 left: nav_br.right
@@ -64,12 +64,18 @@ ApplicationWindow {
             }
         }
 
-        Songs_page {
-            id: songs_page
+        StackView {
+            id: canvas
+
             anchors {
                 top: player.bottom
                 left: nav_br.right
+                bottom: parent.bottom
                 right: queue.left
+            }
+
+            Component.onCompleted: {
+                canvas.push("ui/songs_page/Songs_page.qml")
             }
         }
 

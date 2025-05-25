@@ -214,9 +214,43 @@ void player::media_status_changed(QMediaPlayer::MediaStatus status)
     if (status == QMediaPlayer::EndOfMedia)
     {
         current_index++;
-        if (current_index < playing_next->rowCount())
+        if (current_index < playing_next -> rowCount())
         {
-            play_current();
+            //Move currently playing to history
+            auto index = currently_playing->index(0,0);
+
+            auto path = currently_playing->data(index, songmodel::PathRole).toString();
+            QString title = currently_playing->data(index, songmodel::TitleRole).toString();
+            QString artist = currently_playing->data(index, songmodel::ArtistRole).toString();
+            QString album = currently_playing->data(index, songmodel::AlbumRole).toString();
+            QString cover = currently_playing->data(index, songmodel::CoverRole).toString();
+
+            history->append(path, title, cover, artist, album);
+
+            //Move top item of visual queue to currently playing
+            index = visual_queue->index(0,0);
+
+            path = visual_queue->data(index, songmodel::PathRole).toString();
+            title = visual_queue->data(index, songmodel::TitleRole).toString();
+            artist = visual_queue->data(index, songmodel::ArtistRole).toString();
+            album = visual_queue->data(index, songmodel::AlbumRole).toString();
+            cover = visual_queue->data(index, songmodel::CoverRole).toString();
+
+            currently_playing->clear();
+            currently_playing->append(path, title, cover, artist, album);
+
+            visual_queue->removeRows(0,1);
+
+            mediaplayer->setSource(QUrl::fromLocalFile(path));
+            //mp3 files dont seem to play nice
+            if (path.endsWith(".mp3"))
+            {
+                mediaplayer->play();
+                wait(500);
+                set_position(1);
+            }else {
+                mediaplayer->play();
+            }
         }
     }
 }

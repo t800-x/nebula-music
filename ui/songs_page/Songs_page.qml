@@ -5,8 +5,7 @@ import Nebula.Media
 import Nebula.Database
 
 Rectangle {
-    height: parent.height
-    width: parent.width
+    anchors.fill: parent
     color: "transparent"
     clip: true
     id: root
@@ -31,14 +30,6 @@ Rectangle {
         anchors.top: title.bottom
         z: 2
     }
-
-    // Seperator {
-    //     id: header_top
-    //     height: 1
-    //     clr: Qt.lighter(Consts.player_color)
-    //     anchors.top: title_br.bottom
-    //     z: 2
-    // }
 
     Songs_header {
         id: header
@@ -95,7 +86,7 @@ Rectangle {
             left: parent.left
             right: parent.right
             bottom: parent.bottom
-            bottomMargin: 75
+            // bottomMargin: 75
             leftMargin: 4
             rightMargin: 4
             topMargin: 4

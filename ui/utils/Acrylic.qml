@@ -28,6 +28,7 @@ Rectangle {
             id: effectSource
             sourceItem: blurSource
             anchors.fill: parent
+            live: true
             scale: 0.1
             sourceRect: Qt.rect(root.x, root.y, root.width, root.height)
         }
@@ -61,9 +62,9 @@ Rectangle {
         }
     }
 
-    OpacityMask {
-        anchors.fill: parent
-        source: blurredContent          // everything above: blur + tint
-        maskSource: maskShape   // our hidden rounded‐rect
-    }
+    // OpacityMask {
+    //     anchors.fill: parent
+    //     source: blurredContent          // everything above: blur + tint
+    //     maskSource: maskShape   // our hidden rounded‐rect
+    // }
 }
