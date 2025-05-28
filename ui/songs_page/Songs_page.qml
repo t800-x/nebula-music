@@ -4,6 +4,8 @@ import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import Nebula.Media
 import Nebula.Database
 
+import "../utils"
+
 Rectangle {
     anchors.fill: parent
     color: "transparent"

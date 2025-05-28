@@ -1,10 +1,13 @@
 import QtQuick
 import QtQuick.Controls
 
+
 Rectangle {
     id: root
     required property string text
     signal clicked()
+
+    opacity: parent.width === 0 ? 0 : 1
 
     property bool hovered: false
     property bool pressed: false
@@ -18,6 +21,13 @@ Rectangle {
     }
 
     radius: 5
+
+    Behavior on opacity {
+        NumberAnimation {
+            easing.type: easing.InOutQuad
+            duration: 100
+        }
+    }
 
     Label {
         id: clear_label

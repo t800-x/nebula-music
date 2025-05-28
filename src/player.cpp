@@ -9,6 +9,9 @@
 #include <QAudioOutput>
 #include <QTimer>
 #include <QEventLoop>
+#include <QFile>
+#include <QTextStream>
+#include <QRegularExpression>
 
 
 player::player(QObject *parent)
@@ -32,6 +35,8 @@ void player::init(songmodel *model)
     visual_queue = new songmodel(this);
     history = new songmodel(this);
     manual_idx = 0;
+
+    synced_lyrics = new SyncedLyricsModel(this);
 
     //media status signal
     connect(mediaplayer, &QMediaPlayer::mediaStatusChanged, this, &player::media_status_changed);
@@ -67,6 +72,9 @@ void player::play(QObject* m_table, int index)
     }else {
         mediaplayer->play();
     }
+
+    load_synced_lyrics();
+    songChanged();
 
     visual_queue->removeRows(0, 1);
 
@@ -130,6 +138,8 @@ void player::next()
         }else {
             mediaplayer->play();
         }
+        load_synced_lyrics();
+        emit songChanged();
     }
 }
 
@@ -178,6 +188,9 @@ void player::prev()
         }else {
             mediaplayer->play();
         }
+
+        load_synced_lyrics();
+        emit songChanged();
     }
 }
 
@@ -207,6 +220,38 @@ void player::add_to_queue(const QJSValue& data)
     visual_queue->insert((manual_idx + 1)- offset, path, title, cover, artist, album);
     playing_next->insert(manual_idx + 1, path, title, cover, artist, album);
     manual_idx++;
+}
+
+bool player::isInFrame(unsigned int lyricTimestamp, int idx)
+{
+    qint64 currentPos = get_position();
+
+    // No lyrics case
+    if (synced_lyrics->rowCount() <= 0) return false;
+
+    // First lyric: active from start to next lyric
+    if (idx == 0) {
+        if (synced_lyrics->rowCount() > 1) {
+            unsigned int nextTimestamp = synced_lyrics->data(
+                                                          synced_lyrics->index(1, 0),
+                                                          SyncedLyricsModel::Timestamp_msRole
+                                                          ).toUInt();
+            return currentPos >= lyricTimestamp && currentPos < nextTimestamp;
+        }
+        return currentPos >= lyricTimestamp;
+    }
+    // Last lyric: active from its timestamp onward
+    else if (idx == synced_lyrics->rowCount() - 1) {
+        return currentPos >= lyricTimestamp;
+    }
+    // Middle lyrics: active between current and next timestamp
+    else {
+        unsigned int nextTimestamp = synced_lyrics->data(
+                                                      synced_lyrics->index(idx + 1, 0),
+                                                      SyncedLyricsModel::Timestamp_msRole
+                                                      ).toUInt();
+        return currentPos >= lyricTimestamp && currentPos < nextTimestamp;
+    }
 }
 
 void player::media_status_changed(QMediaPlayer::MediaStatus status)
@@ -251,6 +296,8 @@ void player::media_status_changed(QMediaPlayer::MediaStatus status)
             }else {
                 mediaplayer->play();
             }
+            load_synced_lyrics();
+            emit songChanged();
         }
     }
 }
@@ -316,6 +363,8 @@ void player::play_current()
     }else {
         mediaplayer->play();
     }
+    load_synced_lyrics();
+    emit songChanged();
 }
 
 void player::wait(int milliseconds)
@@ -323,4 +372,38 @@ void player::wait(int milliseconds)
     QEventLoop loop;
     QTimer::singleShot(milliseconds, &loop, &QEventLoop::quit);
     loop.exec(); // Blocks here until the timer calls quit()
+}
+
+void player::load_synced_lyrics()
+{
+    synced_lyrics->clear();
+    const QString path = currently_playing->data(currently_playing->index(0, 0), songmodel::PathRole).toString();
+    if (path.isEmpty() || path.isNull()) return;
+    const QString filepath = path.left(path.lastIndexOf('.')) + ".lrc";
+
+    QFile file(filepath);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open file:" << file.errorString();
+        return;
+    }
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QRegularExpression regex(R"(\[(\d+):(\d+)(?:\.(\d+))?\](.*))");
+        QRegularExpressionMatch match = regex.match(line);
+
+        if (match.hasMatch()) {
+            int minutes = match.captured(1).toInt();
+            int seconds = match.captured(2).toInt();
+            int milliseconds = match.captured(3).isEmpty() ? 0 : match.captured(3).left(3).rightJustified(3, '0').toInt();
+            QString lyric = match.captured(4).trimmed();
+
+            int totalMs = minutes * 60000 + seconds * 1000 + milliseconds;
+            synced_lyrics->append(lyric, totalMs);
+        }
+    }
+
+    file.close();
 }

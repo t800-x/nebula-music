@@ -169,7 +169,8 @@ QString Tag_reader::get_cover(const QString audioPath)
     QFileInfo fi(audioPath);
     QDir dir = fi.dir();
     QString base = fi.completeBaseName();
-    QString name = QString("%1_cover.%2").arg(base, ext);
+    // QString name = QString("%1_cover.%2").arg(base, ext);
+    QString name = base + "." + ext;
     QString out  = dir.filePath(name);
 
     // if (!dir.isWritable()) {

@@ -2,7 +2,9 @@ import QtQuick
 import QtQuick.Controls.Material
 import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import Nebula.Media
+import Nebula.Events
 
+import "../utils"
 
 Rectangle {
     color: Consts.player_color
@@ -86,4 +88,47 @@ Rectangle {
     }
 
 
+    IconButton {
+        id: showlyrics
+
+        text: "\uF795"
+
+        anchors{
+            verticalCenter: parent.verticalCenter
+            right: showqueue.left
+        }
+        onClicked: {
+            if (active) {
+                EventBus.emitLyricsButtonClicked()
+            }else{
+                EventBus.emitLyricsButtonClicked()
+            }
+        }
+    }
+
+    IconButton {
+        id: showqueue
+        text: "\uF6E8"
+        anchors{
+            verticalCenter: parent.verticalCenter
+            right: parent.right
+            rightMargin: 50
+        }
+        onClicked: {
+            if (active) {
+                EventBus.emitQueueButtonClick()
+            }else{
+                EventBus.emitQueueButtonClick()
+            }
+        }
+    }
+
+    Connections {
+        target: EventBus
+        function onCurrentPaneChanged() {
+            var pane = EventBus.getCurrentPane()
+            showlyrics.active = (pane === "LyricsPane")
+            showqueue.active = (pane === "Queue")
+        }
+    }
 }

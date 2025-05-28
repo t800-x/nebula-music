@@ -31,7 +31,7 @@ qt_add_qml_module(appnebula-music
     QML_FILES
         Main.qml
         Consts.js
-        EventBus.qml
+
         test.qml
 
         ui/nav/Navbar.qml
@@ -41,6 +41,8 @@ qt_add_qml_module(appnebula-music
         ui/utils/Acrylic_native.qml
         ui/utils/Seperator.qml
         ui/utils/CustomButton.qml
+        ui/utils/Button1.qml
+        ui/utils/IconButton.qml
 
         ui/player/Player.qml
         ui/player/Player_controls.qml
@@ -54,12 +56,17 @@ qt_add_qml_module(appnebula-music
         ui/queue/Queue.qml
         ui/queue/Queue_item.qml
         ui/queue/Queue_tile.qml
+
+        ui/lyrics/LyricsPane.qml
+        ui/lyrics/LyricItem.qml
     SOURCES
         src/player.cpp src/headers/player.h
         src/database.cpp src/headers/database.h
         src/tag_reader.cpp src/headers/tag_reader.h
         src/models/songmodel.cpp src/models/songmodel.h
         src/models/SyncedLyrics.h
+        src/models/syncedlyricsmodel.h src/models/syncedlyricsmodel.cpp
+        src/headers/eventbus.h src/eventbus.cpp
     RESOURCES
         icons/CupertinoIcons.ttf
 )

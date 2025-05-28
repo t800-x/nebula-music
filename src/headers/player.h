@@ -10,6 +10,7 @@
 #include <QVariantMap>
 #include "models/songmodel.h"
 #include "headers/tag_reader.h"
+#include "models/syncedlyricsmodel.h"
 
 class player : public QObject
 {
@@ -28,6 +29,8 @@ public slots:
     void play_next(const QJSValue& data);
     void add_to_queue(const QJSValue& data);
 
+    bool isInFrame(unsigned int ms, int idx);
+
     QString get_title(){return mediaplayer->metaData().stringValue(QMediaMetaData::Title);}
     QString get_artist(){return mediaplayer->metaData().stringValue(QMediaMetaData::AlbumArtist);}
     QUrl get_cover() {return QUrl::fromLocalFile(currently_playing->data(currently_playing->index(0, 0), songmodel::CoverRole).toString());}
@@ -36,6 +39,7 @@ public slots:
     qint64 get_position(){return mediaplayer->position();}
     void set_position(qint64 position){mediaplayer->setPosition(position);}
     songmodel* get_queue(){return visual_queue;}
+    SyncedLyricsModel* get_synced_lyrics() {return synced_lyrics;}
 
 private slots:
     void media_status_changed(QMediaPlayer::MediaStatus status);
@@ -44,6 +48,7 @@ private:
     void set_queue(songmodel* table, int index);
     void play_current();
     void wait(int milliseconds);
+    void load_synced_lyrics();
 
     QMediaPlayer *mediaplayer;
     QAudioOutput *output;
@@ -55,11 +60,14 @@ private:
     songmodel* visual_queue;
     songmodel* history;
 
+    SyncedLyricsModel* synced_lyrics;
+
 signals:
     void player_ready();
     void player_state_changed();
     void time_changed();
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void songChanged();
 };
 
 #endif // PLAYER_H

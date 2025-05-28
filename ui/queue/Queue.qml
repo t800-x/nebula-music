@@ -1,16 +1,27 @@
 import QtQuick
 import QtQuick.Controls.Material
-import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import QtQuick.Layouts
 import QtQml.Models
 import Nebula.Media
-import "../utils/Seperator.qml"
+
+import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
+import "../utils/"
 
 Rectangle {
 
     id: root
     property var song_model: MediaPlayer.get_queue()
+    property string name: "Queue"
     color: Consts.player_color
+
+    Behavior on width {
+        NumberAnimation {
+            duration: 150
+            easing.type: Easing.InOutQuad
+            // easing.amplitude: 1.0
+            // easing.period: 0.4
+        }
+    }
 
     Seperator {
         id: br
