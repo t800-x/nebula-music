@@ -67,6 +67,7 @@ Rectangle {
         }
     }
 
+    //When the Song is changed
     Connections {
         target: MediaPlayer
 
