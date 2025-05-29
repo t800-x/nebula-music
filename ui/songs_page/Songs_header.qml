@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Material
 import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
+import "../utils"
 
 Rectangle {
     id: root

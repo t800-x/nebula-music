@@ -11,8 +11,7 @@ Rectangle {
     color: "transparent"
     clip: true
     id: root
-    property var table: Keeper.get_all_songs()
-
+    property var table: Keeper.get_songs_data()
 
     Songs_title {
         id: title

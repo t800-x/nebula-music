@@ -14,6 +14,14 @@ Rectangle {
     property string name: "Queue"
     color: Consts.player_color
 
+    Label {
+        text: "No Items in Queue"
+        color: Qt.rgba(1, 1, 1, 0.6)
+        font.pointSize: 10
+        anchors.centerIn: parent
+        visible: false/*song_model.rowCount() === 0*/
+    }
+
     Behavior on width {
         NumberAnimation {
             duration: 150

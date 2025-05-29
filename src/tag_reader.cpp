@@ -96,6 +96,29 @@ std::vector<QString> Tag_reader::get_basic_tags(QString filepath)
 QString Tag_reader::get_cover(const QString audioPath)
 {
     qDebug() << "Opening:" << audioPath;
+    QFileInfo fi(audioPath);
+    QDir dir = fi.dir();
+    QString base = fi.completeBaseName();
+
+    // Prepare covers folder and output path
+    QDir coversDir(dir.filePath("covers"));
+    if (!coversDir.exists()) {
+        if (!dir.mkdir("covers")) {
+            qDebug() << "Failed to create covers directory.";
+            return {};
+        }
+    }
+
+    // We'll determine extension later, but check for existing files
+    const QStringList knownExts = {"png", "jpg", "jpeg", "bin"};
+    for (const auto &ext : knownExts) {
+        QString checkPath = coversDir.filePath(base + "." + ext);
+        if (QFile::exists(checkPath)) {
+            qDebug() << "Cover already exists at" << checkPath;
+            return checkPath;
+        }
+    }
+
     TagLib::FileRef ref(QFile::encodeName(audioPath).constData(), true);
     auto *baseFile = ref.file();
     if (!baseFile) {
@@ -104,7 +127,7 @@ QString Tag_reader::get_cover(const QString audioPath)
     }
 
     QByteArray imgData;
-    QString  mimeType;
+    QString mimeType;
 
     // 1) MP3 / MP4 via FileRef complex props (APIC, covr atoms)
     TagLib::StringList keys;
@@ -112,21 +135,17 @@ QString Tag_reader::get_cover(const QString audioPath)
         keys = tag->complexPropertyKeys();
 
     for (const auto &key : keys) {
-        // look for byte-vector props named APIC, covr, PICTURE, etc.
         auto props = baseFile->tag()->complexProperties(key);
         for (const auto &m : props) {
             for (const auto &p : m) {
                 if (p.second.type() == TagLib::Variant::ByteVector) {
                     auto bv = p.second.value<TagLib::ByteVector>();
                     if (bv.isEmpty()) continue;
-                    imgData  = QByteArray(reinterpret_cast<const char*>(bv.data()), bv.size());
-                    // some formats (MP4) give the MIME via a text field
+                    imgData = QByteArray(reinterpret_cast<const char*>(bv.data()), bv.size());
                     mimeType = QString::fromUtf8(m.value("MIME", {}).toString().toCString());
                     if (mimeType.isEmpty()) {
-                        // fallback: guess from key
                         QString k = QString::fromUtf8(key.toCString()).toLower();
-                        if (k.contains("png")) mimeType = "image/png";
-                        else mimeType = "image/jpeg";
+                        mimeType = k.contains("png") ? "image/png" : "image/jpeg";
                     }
                     qDebug() << "Found image in complex prop" << QString::fromUtf8(key.toCString())
                              << ", size =" << imgData.size();
@@ -138,15 +157,15 @@ QString Tag_reader::get_cover(const QString audioPath)
         if (!imgData.isEmpty()) break;
     }
 
-    // 2) FLAC / Ogg/Opus: Vorbis picture blocks (only if nothing yet)
+    // 2) FLAC / Ogg/Opus: Vorbis picture blocks
     if (imgData.isEmpty()) {
         if (auto *flac = dynamic_cast<TagLib::FLAC::File*>(baseFile)) {
             auto pics = flac->pictureList();
             if (!pics.isEmpty()) {
                 auto &pic = pics.front();
-                auto bv  = pic->data();
-                imgData   = QByteArray(reinterpret_cast<const char*>(bv.data()), bv.size());
-                mimeType  = QString::fromUtf8(pic->mimeType().toCString());
+                auto bv = pic->data();
+                imgData = QByteArray(reinterpret_cast<const char*>(bv.data()), bv.size());
+                mimeType = QString::fromUtf8(pic->mimeType().toCString());
                 qDebug() << "Found FLAC/Ogg picture block, mime =" << mimeType
                          << ", size =" << imgData.size();
             }
@@ -165,21 +184,10 @@ QString Tag_reader::get_cover(const QString audioPath)
              mimeType.contains("jpg",  Qt::CaseInsensitive)) ext = "jpg";
     else ext = "bin";
 
-    // 4) Build write path
-    QFileInfo fi(audioPath);
-    QDir dir = fi.dir();
-    QString base = fi.completeBaseName();
-    // QString name = QString("%1_cover.%2").arg(base, ext);
+    // 4) Final path in covers/
     QString name = base + "." + ext;
-    QString out  = dir.filePath(name);
+    QString out = coversDir.filePath(name);
 
-    // if (!dir.isWritable()) {
-    //     QString tmp = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    //     out = QDir(tmp).filePath(name);
-    //     qDebug() << "Directory not writable, using temp location:" << out;
-    // }
-
-    // 5) Write to disk
     QFile fout(out);
     if (!fout.open(QIODevice::WriteOnly)) {
         qDebug() << "Failed to open for writing:" << out;
@@ -191,6 +199,7 @@ QString Tag_reader::get_cover(const QString audioPath)
 
     return out;
 }
+
 
 
 QList<SyncedLyrics> Tag_reader::get_synced_lyrics(QString filepath)

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
     db->init();
     mediaplayer->init(queuemodel);
-    db->add_to_library("D:/Songs/Vampire");
+    db->add_to_library("D:/Songs/The Music");
 
 
     qmlRegisterSingletonInstance<player>("Nebula.Media", 1, 0, "MediaPlayer", mediaplayer);

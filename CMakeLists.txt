@@ -43,6 +43,7 @@ qt_add_qml_module(appnebula-music
         ui/utils/CustomButton.qml
         ui/utils/Button1.qml
         ui/utils/IconButton.qml
+        ui/utils/TextBox.qml
 
         ui/player/Player.qml
         ui/player/Player_controls.qml
@@ -69,6 +70,7 @@ qt_add_qml_module(appnebula-music
         src/headers/eventbus.h src/eventbus.cpp
     RESOURCES
         icons/CupertinoIcons.ttf
+        SOURCES src/models/songfilterproxymodel.h src/models/songfilterproxymodel.cpp
 )
 
 qt6_add_resources(appnebula-music resources.qrc)

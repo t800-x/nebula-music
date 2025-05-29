@@ -229,13 +229,19 @@ bool database::init()
     }
 
     all_songs = new songmodel(this);
+    songs_data = new SongFilterProxyModel(this);
+
+    songs_data -> setSourceModel(all_songs);
+
+    get_all_songs();
 
     return true;
 }
 
-songmodel *database::get_all_songs()
+void database::get_all_songs()
 {
     // 1. Construct your SQL query
+    all_songs->clear();
     QString sql = R"(
         SELECT
             s.song_id,
@@ -258,7 +264,7 @@ songmodel *database::get_all_songs()
     QSqlQuery query;
     if (!query.exec(sql)) {
         qWarning() << "Query execution failed:" << query.lastError().text();
-        return all_songs;
+        return;
     }
 
     // 3. Iterate over results
@@ -273,9 +279,8 @@ songmodel *database::get_all_songs()
 
         all_songs->append(filePath, songTitle, coverPath, artist, album);
     }
-
-    return all_songs;
 }
+
 
 QVariantList database::query_db(QString query)
 {
