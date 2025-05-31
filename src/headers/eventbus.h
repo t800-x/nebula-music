@@ -12,10 +12,12 @@ public:
     explicit eventbus(QObject *parent = nullptr);
     QString currentPane;
     int currentLyricindex;
+    QString currentPage;
 public slots:
     void emitQueueButtonClick() {emit queueButtonClicked();}
     void emitLyricsButtonClicked() {emit lyricsButtonClicked();}
     void emitLyricsViewChanged() {emit lyricsViewChanged();}
+    void emitNavButtonClicked(QString btn) {emit navButtonClicked(btn);}
 
     QString getCurrentPane() {return currentPane;}
     void setCurrentPane(QString str) {currentPane = str; qDebug() << currentPane; emit currentPaneChanged();}
@@ -27,6 +29,7 @@ signals:
     void lyricsButtonClicked();
     void currentPaneChanged();
     void lyricsViewChanged();
+    void navButtonClicked(QString btn);
 };
 
 #endif // EVENTBUS_H

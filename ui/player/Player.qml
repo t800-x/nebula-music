@@ -12,7 +12,13 @@ Rectangle {
     width: parent.width
     id: root
     property var blursource
+    property var window
     z: 5
+
+    MouseArea {
+        anchors.fill: parent
+        onPressed: window.startSystemMove()
+    }
 
     Rectangle {
         color: "transparent"

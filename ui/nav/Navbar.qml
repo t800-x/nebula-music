@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls.Material
 import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import "../utils"
+import Nebula.Events
 
 Rectangle {
 
@@ -36,8 +37,24 @@ Rectangle {
         Navbar_button {
             id: songs_btn
             text: "Songs"
-            // iconSource: "icons/music.svg"
-            visibility: true
+            glyph: "\uF46B"
+            active: true
+            name: "Songs"
+
+            onClicked: {
+                EventBus.emitNavButtonClicked(name)
+            }
+        }
+
+        Navbar_button {
+            id: albums_btn
+            text: "Albums"
+            glyph: "\uF3CA"
+            name: "Albums"
+
+            onClicked: {
+                EventBus.emitNavButtonClicked(name)
+            }
         }
     }
 }

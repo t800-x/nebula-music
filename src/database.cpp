@@ -346,5 +346,7 @@ bool database::add_to_library(QString path)
         insertSongModel(metadata) ? qDebug() << "Insert for " << file << " successful." : qDebug() << "Insert for " << file << " failed.";
     }
 
+    get_all_songs();
+
     return true;
 }

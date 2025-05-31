@@ -26,6 +26,36 @@ void SongFilterProxyModel::setSortRole(int role)
     emit sortRoleChanged();
 }
 
+songmodel *SongFilterProxyModel::toSongModel(QObject *parent)
+{
+    // 1) Create the new model
+    songmodel* filtered = new songmodel(parent);
+
+    // 2) For each row in the proxy, pull out all the data
+    const auto roles = sourceModel()->roleNames(); // same roles as SongModel
+    for (int row = 0; row < rowCount(); ++row) {
+        QModelIndex pidx = index(row, 0);
+
+        // Fetch each role’s data
+        QString path, title, cover, artist, album;
+        QList<SyncedLyrics> lyrics;
+
+        // You know your Roles enum, so:
+        path   = data(pidx, songmodel::PathRole).   toString();
+        title  = data(pidx, songmodel::TitleRole).  toString();
+        cover  = data(pidx, songmodel::CoverRole).  toString();
+        artist = data(pidx, songmodel::ArtistRole). toString();
+        album  = data(pidx, songmodel::AlbumRole).  toString();
+        lyrics = data(pidx, songmodel::SyncedLyricsRole)
+                     .value<QList<SyncedLyrics>>();
+
+        // 3) Append into the new SongModel
+        filtered->append(path, title, cover, artist, album, lyrics);
+    }
+
+    return filtered;
+}
+
 bool SongFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     if (m_filterText.isEmpty())

@@ -1,36 +1,31 @@
 import QtQuick
 import QtQuick.Controls.Material
 import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
+import Nebula.Events
 
 Rectangle {
     id: root
     property alias text: label.text
-    // property alias iconSource: icon.source
-    property alias visibility: root.visible
+    property string glyph
+    property bool active: false
+    required property string name
     signal clicked
+
     anchors.horizontalCenter: parent.horizontalCenter
     width: parent.width * 0.9
-    height: label.font.pixelSize * 1.85
+    height: label.font.pixelSize * 2
     radius: 8
 
     property bool hovered: false
     property bool pressed: false
-    property color baseColor: Consts.nav_color
 
-    visible: true
     color: {
-        var changed_color = adjustBrightness(baseColor, 1.2)
-
-        if (visible && hovered) {
-            return adjustBrightness(changed_color, 1.2)
-        }else if (visible || hovered){
-            return changed_color
-        }else{
-            return baseColor
-        }
+        // if (!active) return "transparent"
+        if (active && hovered) return Qt.rgba(1, 1, 1, 0.3)
+        else if (active && !hovered) return Qt.rgba(1, 1, 1, 0.1)
+        else if(!active && hovered)return Qt.rgba(1, 1, 1, 0.1)
+        else return "transparent"
     }
-
-    //(hovered || visible) ? adjustBrightness(baseColor, 1.2) : baseColor
 
     MouseArea {
         id: mouseArea
@@ -53,20 +48,12 @@ Rectangle {
 
         Label {
             id: icon
-            text: ""
+            text: glyph
             font.family: "CupertinoIcons"
             color: "white"
             font.pointSize: 14
             y: +3
         }
-
-        // Image {
-        //     id: icon
-        //     source: ""
-        //     width: 20
-        //     height: 20
-        //     y: +2
-        // }
 
         Label {
             id: label
@@ -76,15 +63,12 @@ Rectangle {
         }
     }
 
-    function adjustBrightness(color, factor) {
-        let r = color.r * factor;
-        let g = color.g * factor;
-        let b = color.b * factor;
+    Connections{
+        target: EventBus
 
-        r = Math.min(1.0, r);
-        g = Math.min(1.0, g);
-        b = Math.min(1.0, b);
-
-        return Qt.rgba(r, g, b, color.a);
+        function onNavButtonClicked(btn) {
+            if (root.name === btn) active = true
+            else active = false
+        }
     }
 }

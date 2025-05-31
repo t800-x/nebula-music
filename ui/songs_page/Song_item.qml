@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import Nebula.Media
 import QtQuick.Effects
@@ -120,7 +121,7 @@ Rectangle {
 
             if(mouse.button === Qt.LeftButton) {
                 root.clicked()
-                MediaPlayer.play(all_songs, ind)
+                MediaPlayer.play(all_songs.toSongModel(root), ind)
             }else if(mouse.button === Qt.RightButton) {
                 contextMenu.popup()
             }

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSortFilterProxyModel>
+#include "songmodel.h"
 
 class SongFilterProxyModel : public QSortFilterProxyModel
 {
@@ -18,6 +19,9 @@ public:
 
     int sortRole() const { return QSortFilterProxyModel::sortRole(); }
     void setSortRole(int role);
+
+public slots:
+    songmodel* toSongModel(QObject* parent);
 
 signals:
     void filterTextChanged();

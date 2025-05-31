@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(VCPKG_TARGET_TRIPLET "x64-mingw-static" CACHE STRING "")
+set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
 set(CMAKE_TOOLCHAIN_FILE "F:/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 
 project(nebula-music VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -12,6 +13,7 @@ find_package(Qt6     REQUIRED COMPONENTS Quick Multimedia Sql Core Core5Compat)
 find_package(utf8cpp CONFIG REQUIRED)
 find_package(ZLIB    REQUIRED)
 find_package(taglib  CONFIG REQUIRED)
+find_package(cppwinrt CONFIG REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -60,6 +62,11 @@ qt_add_qml_module(appnebula-music
 
         ui/lyrics/LyricsPane.qml
         ui/lyrics/LyricItem.qml
+
+        ui/albums_page/AlbumsPage.qml
+        ui/albums_page/AlbumItem.qml
+        ui/albums_page/AlbumHeader.qml
+        ui/albums_page/AlButton.qml
     SOURCES
         src/player.cpp src/headers/player.h
         src/database.cpp src/headers/database.h
@@ -68,9 +75,11 @@ qt_add_qml_module(appnebula-music
         src/models/SyncedLyrics.h
         src/models/syncedlyricsmodel.h src/models/syncedlyricsmodel.cpp
         src/headers/eventbus.h src/eventbus.cpp
+        src/models/songfilterproxymodel.h src/models/songfilterproxymodel.cpp
     RESOURCES
         icons/CupertinoIcons.ttf
-        SOURCES src/models/songfilterproxymodel.h src/models/songfilterproxymodel.cpp
+        icons/placeholder.png
+        Main.qml
 )
 
 qt6_add_resources(appnebula-music resources.qrc)
@@ -89,6 +98,11 @@ set_target_properties(appnebula-music PROPERTIES
 target_link_libraries(appnebula-music
     PRIVATE Qt6::Quick Qt6::Multimedia Qt6::Sql Qt6::Core TagLib::TagLib TagLib::tag utf8::cpp utf8cpp::utf8cpp ZLIB::ZLIB Qt6::Core5Compat
 )
+
+# On Windows, link dwmapi
+if (WIN32)
+    target_link_libraries(appnebula-music PRIVATE dwmapi Microsoft::CppWinRT)
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS appnebula-music

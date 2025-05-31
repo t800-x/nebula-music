@@ -18,7 +18,7 @@ ApplicationWindow {
     visible: true
     title: "Nebula Music Player"
     color: Consts.main_bg_color
-    Material.theme: Material.system
+    Material.theme: Material.Dark
     Material.accent: Consts.accent
 
     FontLoader {
@@ -56,6 +56,7 @@ ApplicationWindow {
         Player {
             id: player
             blursource: allContent
+            window: root
             anchors {
                 top: parent.top
                 left: nav_br.right
@@ -157,6 +158,11 @@ ApplicationWindow {
                     console.log(4)
                     EventBus.setCurrentPane("LyricsPane")
                 }
+            }
+
+            function onNavButtonClicked(btn) {
+                if (btn === "Songs") canvas.replace("ui/songs_page/Songs_page.qml")
+                else if (btn === "Albums") canvas.replace("ui/albums_page/AlbumsPage.qml")
             }
         }
     }
