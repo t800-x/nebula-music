@@ -530,13 +530,18 @@ QUrl database::getAlbumCover(int albumId)
 void database::checkDeleted()
 {
     QSqlDatabase db_conn = getThreadLocalConnection();
+    qDebug() << "Starting checkDeleted()";
 
-    // 1) Fetch all songs (song_id, file_path, album_id) into a local list
+    // 1) Fetch all songs
     struct SongInfo { int songId; QString filePath; int albumId; };
     QVector<SongInfo> allSongs;
     {
         QSqlQuery fetchQuery(db_conn);
         fetchQuery.prepare("SELECT song_id, file_path, album_id FROM songs");
+        if (!fetchQuery.exec()) {
+            qDebug() << "Failed to fetch songs:" << fetchQuery.lastError().text();
+            return;
+        }
         while (fetchQuery.next()) {
             allSongs.append({
                 fetchQuery.value(0).toInt(),
@@ -545,137 +550,151 @@ void database::checkDeleted()
             });
         }
     }
+    qDebug() << "Fetched" << allSongs.size() << "songs from database";
 
-    // 2) Use 50 parallel threads to check which files no longer exist on disk
-    QThreadPool::globalInstance()->setMaxThreadCount(50);
-    auto missingFuture = QtConcurrent::filtered(
-        allSongs,
-        [](const SongInfo &info) {
-            return !QFile::exists(info.filePath);
+    // 2) Check which files are missing
+    QVector<SongInfo> missingSongs;
+    for (const SongInfo &info : allSongs) {
+        if (!QFile::exists(info.filePath)) {
+            missingSongs.append(info);
         }
-        );
-    missingFuture.waitForFinished();
-    QVector<SongInfo> missingSongs = missingFuture.results();
+    }
 
     if (missingSongs.isEmpty()) {
-        // Nothing to delete at the song level—still need to check orphaned albums/artists
-        // but skip straight to step 4 below.
+        qDebug() << "No missing files found";
+        return;
     }
+    qDebug() << "Found" << missingSongs.size() << "missing files";
 
-    QSet<int> affectedAlbums;
-    QSqlQuery delQuery;
-    if (!delQuery.exec(QStringLiteral("BEGIN TRANSACTION;"))) {
-        qDebug() << "refresh(): Failed to BEGIN TRANSACTION:" << delQuery.lastError().text();
+    // 3) Start transaction
+    QSqlQuery query(db_conn);
+    if (!query.exec("BEGIN IMMEDIATE TRANSACTION")) {
+        qDebug() << "Failed to start transaction:" << query.lastError().text();
         return;
     }
 
-    // 3) Delete each missing song and collect its album_id
-    for (const SongInfo &s : qAsConst(missingSongs)) {
+    // 4) Delete missing songs
+    QSet<int> affectedAlbums;
+    for (const SongInfo &s : missingSongs) {
         affectedAlbums.insert(s.albumId);
 
-        delQuery.prepare(QStringLiteral("DELETE FROM songs WHERE song_id = :sid;"));
-        delQuery.bindValue(QStringLiteral(":sid"), s.songId);
+        QSqlQuery delQuery(db_conn);
+        delQuery.prepare("DELETE FROM songs WHERE song_id = :sid");
+        delQuery.bindValue(":sid", s.songId);
 
         if (!delQuery.exec()) {
-            qDebug() << "refresh(): Failed to delete song_id"
-                     << s.songId << ":" << delQuery.lastError().text();
-            delQuery.exec(QStringLiteral("ROLLBACK;"));
+            qDebug() << "Failed to delete song" << s.songId << ":" << delQuery.lastError().text();
+            query.exec("ROLLBACK");
             return;
+        }
+
+        if (delQuery.numRowsAffected() > 0) {
+            qDebug() << "Successfully deleted song:" << s.songId << "|" << s.filePath;
+        } else {
+            qDebug() << "No rows affected when deleting song:" << s.songId;
         }
     }
 
-    // 4) Find albums (from affectedAlbums) that now have zero songs
+    // 5) Find orphaned albums
     QSet<int> albumsToDelete;
-    for (int albumId : qAsConst(affectedAlbums)) {
-        delQuery.prepare(QStringLiteral(
-            "SELECT 1 "
-            "FROM songs "
-            "WHERE album_id = :aid "
-            "LIMIT 1;"
-            ));
-        delQuery.bindValue(QStringLiteral(":aid"), albumId);
+    for (int albumId : affectedAlbums) {
+        QSqlQuery checkQuery(db_conn);
+        checkQuery.prepare("SELECT COUNT(*) FROM songs WHERE album_id = :aid");
+        checkQuery.bindValue(":aid", albumId);
 
-        if (!delQuery.exec()) {
-            qDebug() << "refresh(): Failed to check songs for album_id"
-                     << albumId << ":" << delQuery.lastError().text();
-            delQuery.exec(QStringLiteral("ROLLBACK;"));
+        if (!checkQuery.exec() || !checkQuery.next()) {
+            qDebug() << "Failed to check album songs:" << checkQuery.lastError().text();
+            query.exec("ROLLBACK");
             return;
         }
 
-        if (!delQuery.next()) {
-            // No songs remain under this album
+        int songCount = checkQuery.value(0).toInt();
+        if (songCount == 0) {
             albumsToDelete.insert(albumId);
+            qDebug() << "Album" << albumId << "has no songs remaining";
         }
     }
 
-    // 5) Delete orphaned albums and their covers
-    for (int albumId : qAsConst(albumsToDelete)) {
-        delQuery.prepare(QStringLiteral("DELETE FROM albums WHERE album_id = :aid;"));
-        delQuery.bindValue(QStringLiteral(":aid"), albumId);
-        if (!delQuery.exec()) {
-            qDebug() << "refresh(): Failed to delete album_id"
-                     << albumId << ":" << delQuery.lastError().text();
-            delQuery.exec(QStringLiteral("ROLLBACK;"));
+    // 6) Delete orphaned albums
+    for (int albumId : albumsToDelete) {
+        QSqlQuery delAlbumQuery(db_conn);
+        delAlbumQuery.prepare("DELETE FROM albums WHERE album_id = :aid");
+        delAlbumQuery.bindValue(":aid", albumId);
+
+        if (!delAlbumQuery.exec()) {
+            qDebug() << "Failed to delete album" << albumId << ":" << delAlbumQuery.lastError().text();
+            query.exec("ROLLBACK");
             return;
         }
+        qDebug() << "Deleted album:" << albumId;
 
-        delQuery.prepare(QStringLiteral("DELETE FROM covers WHERE cover_id = :aid;"));
-        delQuery.bindValue(QStringLiteral(":aid"), albumId);
-        if (!delQuery.exec()) {
-            qDebug() << "refresh(): Failed to delete cover for album_id"
-                     << albumId << ":" << delQuery.lastError().text();
-            delQuery.exec(QStringLiteral("ROLLBACK;"));
-            return;
+        QSqlQuery delCoverQuery(db_conn);
+        delCoverQuery.prepare("DELETE FROM covers WHERE cover_id = :aid");
+        delCoverQuery.bindValue(":aid", albumId);
+
+        if (!delCoverQuery.exec()) {
+            qDebug() << "Failed to delete cover for album" << albumId << ":" << delCoverQuery.lastError().text();
+            // Don't rollback for cover deletion failure - not critical
+        } else {
+            qDebug() << "Deleted cover for album:" << albumId;
         }
     }
 
-    // 6) Find artists that now have zero albums
+    // 7) Find orphaned artists
     QSet<int> artistsToDelete;
-    {
-        QSqlQuery fetchArtists(QStringLiteral("SELECT artist_id FROM artists;"));
-        while (fetchArtists.next()) {
-            int artistId = fetchArtists.value(0).toInt();
-
-            delQuery.prepare(QStringLiteral(
-                "SELECT 1 "
-                "FROM albums "
-                "WHERE artist_id = :arid "
-                "LIMIT 1;"
-                ));
-            delQuery.bindValue(QStringLiteral(":arid"), artistId);
-
-            if (!delQuery.exec()) {
-                qDebug() << "refresh(): Failed to check albums for artist_id"
-                         << artistId << ":" << delQuery.lastError().text();
-                delQuery.exec(QStringLiteral("ROLLBACK;"));
-                return;
-            }
-
-            if (!delQuery.next()) {
-                // No albums remain under this artist
-                artistsToDelete.insert(artistId);
-            }
-        }
-    }
-
-    // 7) Delete orphaned artists
-    for (int artistId : qAsConst(artistsToDelete)) {
-        delQuery.prepare(QStringLiteral("DELETE FROM artists WHERE artist_id = :arid;"));
-        delQuery.bindValue(QStringLiteral(":arid"), artistId);
-        if (!delQuery.exec()) {
-            qDebug() << "refresh(): Failed to delete artist_id"
-                     << artistId << ":" << delQuery.lastError().text();
-            delQuery.exec(QStringLiteral("ROLLBACK;"));
-            return;
-        }
-    }
-
-    // 8) Commit all deletions
-    if (!delQuery.exec(QStringLiteral("COMMIT;"))) {
-        qDebug() << "refresh(): Failed to COMMIT transaction:" << delQuery.lastError().text();
-        delQuery.exec(QStringLiteral("ROLLBACK;"));
+    QSqlQuery artistQuery(db_conn);
+    artistQuery.prepare("SELECT artist_id FROM artists");
+    if (!artistQuery.exec()) {
+        qDebug() << "Failed to fetch artists:" << artistQuery.lastError().text();
+        query.exec("ROLLBACK");
         return;
     }
+
+    while (artistQuery.next()) {
+        int artistId = artistQuery.value(0).toInt();
+
+        QSqlQuery albumCheck(db_conn);
+        albumCheck.prepare("SELECT COUNT(*) FROM albums WHERE artist_id = :arid");
+        albumCheck.bindValue(":arid", artistId);
+
+        if (!albumCheck.exec() || !albumCheck.next()) {
+            qDebug() << "Failed to check artist albums:" << albumCheck.lastError().text();
+            query.exec("ROLLBACK");
+            return;
+        }
+
+        int albumCount = albumCheck.value(0).toInt();
+        if (albumCount == 0) {
+            artistsToDelete.insert(artistId);
+            qDebug() << "Artist" << artistId << "has no albums remaining";
+        }
+    }
+
+    // 8) Delete orphaned artists
+    for (int artistId : artistsToDelete) {
+        QSqlQuery delArtistQuery(db_conn);
+        delArtistQuery.prepare("DELETE FROM artists WHERE artist_id = :arid");
+        delArtistQuery.bindValue(":arid", artistId);
+
+        if (!delArtistQuery.exec()) {
+            qDebug() << "Failed to delete artist" << artistId << ":" << delArtistQuery.lastError().text();
+            query.exec("ROLLBACK");
+            return;
+        }
+        qDebug() << "Deleted artist:" << artistId;
+    }
+
+    // 9) Commit transaction
+    if (!query.exec("COMMIT")) {
+        qDebug() << "Failed to commit transaction:" << query.lastError().text();
+        query.exec("ROLLBACK");
+        return;
+    }
+
+    qDebug() << "Transaction committed successfully";
+    qDebug() << "Total deletions - Songs:" << missingSongs.size()
+             << "Albums:" << albumsToDelete.size()
+             << "Artists:" << artistsToDelete.size();
 }
 
 void database::checkForAddedFiles()
