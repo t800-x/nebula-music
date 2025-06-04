@@ -1,7 +1,6 @@
 #include "headers/tag_reader.h"
 #include "models/songmodel.h"
 
-#include <cstdio>
 #include <tpropertymap.h>
 #include <tstringlist.h>
 #include <tvariant.h>
@@ -13,10 +12,7 @@
 #include <flacfile.h>
 #include <synchronizedlyricsframe.h>
 #include <xiphcomment.h>
-#include <string>
-#include <cstring>
 #include <vector>
-#include <regex>
 #include <QString>
 #include <QStringList>
 #include <mpegfile.h>
@@ -24,7 +20,6 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QList>
-
 #include <QDebug>
 
 Tag_reader::Tag_reader(QObject *parent)
@@ -35,10 +30,10 @@ songmodel* Tag_reader::parse_tags(QString filepath)
 {
     songmodel* result = new songmodel(this);
 
-    qDebug() << "Parsing " << filepath;
+    // qDebug() << "Parsing " << filepath;
 
     auto basic_tags = get_basic_tags(filepath);
-    qDebug() << "Have basic tags";
+    // qDebug() << "Have basic tags";
     auto title = basic_tags[0];
     auto artist = basic_tags[1];
     auto album = basic_tags[2];
@@ -48,32 +43,26 @@ songmodel* Tag_reader::parse_tags(QString filepath)
         qDebug() << tag;
     }
 
-    qDebug() << "Getting lyrics";
-    auto synced_lyrics = get_synced_lyrics(filepath);
-
-    qDebug() << "Getting album cover";
-    auto cover = get_cover(filepath);
-
-    qDebug() << "Appending to model";
-    result->append(filepath, title, cover, artist, album, synced_lyrics);
+    // qDebug() << "Appending to model";
+    result->append(filepath, -1 , title, artist, album); // -1 id cause we dont have it since it's not in the database yet
 
     return result;
 }
 
 std::vector<QString> Tag_reader::get_basic_tags(QString filepath)
 {
-    qDebug() << "Begin tag extraction";
+    // qDebug() << "Begin tag extraction";
 
     std::vector<QString> result = {};
     QByteArray file = QFile::encodeName(filepath);
 
-    qDebug() << "Getting taglib object";
+    // qDebug() << "Getting taglib object";
     TagLib::FileRef f(file.constData(), true);
-    qDebug() << "Have object";
+    // qDebug() << "Have object";
 
     if (!f.isNull() && f.tag())
     {
-        qDebug() << "Tag not null";
+        // qDebug() << "Tag not null";
 
         TagLib::Tag *tag = f.tag();
         result = {
@@ -81,24 +70,29 @@ std::vector<QString> Tag_reader::get_basic_tags(QString filepath)
             QString(tag->artist().toCString()),
             QString(tag->album().toCString())
         };
-
-        qDebug() << "Added tags to vector";
-        // delete tag;
+        // qDebug() << "Added tags to vector";
     }
-
-    // delete file;
-
     return result;
 }
 
 
 
-QString Tag_reader::get_cover(const QString audioPath)
+QString Tag_reader::get_cover(const QString audioPath, const QString outBaseName)
 {
     qDebug() << "Opening:" << audioPath;
-    QFileInfo fi(audioPath);
-    QDir dir = fi.dir();
-    QString base = fi.completeBaseName();
+    // Get the user's home directory
+    QString homeDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    QString appFolderPath = homeDir + "/.nebula";
+    // QFileInfo fi(audioPath);
+    QDir dir(appFolderPath);
+    QString base = outBaseName;
+
+    if (!dir.exists()) {
+        if (!QDir().mkpath(appFolderPath)) {
+            qDebug() << "Failed to create base directory:" << appFolderPath;
+            return {};
+        }
+    }
 
     // Prepare covers folder and output path
     QDir coversDir(dir.filePath("covers"));
@@ -114,7 +108,7 @@ QString Tag_reader::get_cover(const QString audioPath)
     for (const auto &ext : knownExts) {
         QString checkPath = coversDir.filePath(base + "." + ext);
         if (QFile::exists(checkPath)) {
-            qDebug() << "Cover already exists at" << checkPath;
+            // qDebug() << "Cover already exists at" << checkPath;
             return checkPath;
         }
     }
@@ -147,8 +141,8 @@ QString Tag_reader::get_cover(const QString audioPath)
                         QString k = QString::fromUtf8(key.toCString()).toLower();
                         mimeType = k.contains("png") ? "image/png" : "image/jpeg";
                     }
-                    qDebug() << "Found image in complex prop" << QString::fromUtf8(key.toCString())
-                             << ", size =" << imgData.size();
+                    // qDebug() << "Found image in complex prop" << QString::fromUtf8(key.toCString())
+                    //          << ", size =" << imgData.size();
                     break;
                 }
             }
@@ -166,8 +160,8 @@ QString Tag_reader::get_cover(const QString audioPath)
                 auto bv = pic->data();
                 imgData = QByteArray(reinterpret_cast<const char*>(bv.data()), bv.size());
                 mimeType = QString::fromUtf8(pic->mimeType().toCString());
-                qDebug() << "Found FLAC/Ogg picture block, mime =" << mimeType
-                         << ", size =" << imgData.size();
+                // qDebug() << "Found FLAC/Ogg picture block, mime =" << mimeType
+                //          << ", size =" << imgData.size();
             }
         }
     }
@@ -195,87 +189,87 @@ QString Tag_reader::get_cover(const QString audioPath)
     }
     fout.write(imgData);
     fout.close();
-    qDebug() << "Wrote" << imgData.size() << "bytes to" << out;
+    // qDebug() << "Wrote" << imgData.size() << "bytes to" << out;
 
     return out;
 }
 
 
 
-QList<SyncedLyrics> Tag_reader::get_synced_lyrics(QString filepath)
-{
-    QList<SyncedLyrics> result = {};
-    int filetype = Tag_reader::filetype::unsupported;
+// QList<SyncedLyrics> Tag_reader::get_synced_lyrics(QString filepath)
+// {
+//     QList<SyncedLyrics> result = {};
+//     int filetype = Tag_reader::filetype::unsupported;
 
-    if (filepath.endsWith(".flac")) filetype = Tag_reader::filetype::flac;
+//     if (filepath.endsWith(".flac")) filetype = Tag_reader::filetype::flac;
 
-    switch (filetype) {
-    case Tag_reader::filetype::flac:
-        result = get_lyrics_flac(filepath);
-    }
-    // delete filename;
-    return {};
-}
+//     switch (filetype) {
+//     case Tag_reader::filetype::flac:
+//         result = get_lyrics_flac(filepath);
+//     }
+//     // delete filename;
+//     return {};
+// }
 
-QList<SyncedLyrics> Tag_reader::parse_lyrics(QString lyrics_tag) {
-    QList<SyncedLyrics> result;
+// QList<SyncedLyrics> Tag_reader::parse_lyrics(QString lyrics_tag) {
+//     QList<SyncedLyrics> result;
 
-    // Split into lines
-    QStringList lines = lyrics_tag.split('\n', Qt::SkipEmptyParts);
+//     // Split into lines
+//     QStringList lines = lyrics_tag.split('\n', Qt::SkipEmptyParts);
 
-    // Regex to match [mm:ss.xx] timestamp
-    std::regex timestamp_regex(R"(\[(\d{2}):(\d{2})\.(\d{2})\])");
+//     // Regex to match [mm:ss.xx] timestamp
+//     std::regex timestamp_regex(R"(\[(\d{2}):(\d{2})\.(\d{2})\])");
 
-    for (const QString &line : lines) {
-        std::string std_line = line.toStdString();
-        std::smatch match;
+//     for (const QString &line : lines) {
+//         std::string std_line = line.toStdString();
+//         std::smatch match;
 
-        if (std::regex_search(std_line, match, timestamp_regex)) {
-            int minutes = std::stoi(match[1].str());
-            int seconds = std::stoi(match[2].str());
-            int hundredths = std::stoi(match[3].str());
+//         if (std::regex_search(std_line, match, timestamp_regex)) {
+//             int minutes = std::stoi(match[1].str());
+//             int seconds = std::stoi(match[2].str());
+//             int hundredths = std::stoi(match[3].str());
 
-            int timestamp_ms = (minutes * 60 + seconds) * 1000 + hundredths * 10;
+//             int timestamp_ms = (minutes * 60 + seconds) * 1000 + hundredths * 10;
 
-            // Remove timestamp part from line
-            QString lyric_text = QString::fromStdString(std_line.substr(match[0].length()));
+//             // Remove timestamp part from line
+//             QString lyric_text = QString::fromStdString(std_line.substr(match[0].length()));
 
-            // Skip empty lyrics (optional)
-            if (!lyric_text.isEmpty()) {
-                qDebug() << timestamp_ms << " " << lyric_text;
-                result.push_back({lyric_text, static_cast<unsigned int>(timestamp_ms)});
-            }
-        }
-    }
+//             // Skip empty lyrics (optional)
+//             if (!lyric_text.isEmpty()) {
+//                 qDebug() << timestamp_ms << " " << lyric_text;
+//                 result.push_back({lyric_text, static_cast<unsigned int>(timestamp_ms)});
+//             }
+//         }
+//     }
 
-    return result;
-}
+//     return result;
+// }
 
-QList<SyncedLyrics> Tag_reader::get_lyrics_flac(QString filepath)
-{
-    TagLib::FLAC::File file(QFile::encodeName(filepath).constData(), true);
-    if (!file.isValid()) {
-        qDebug() << "Invalid FLAC file!";
-    }
+// QList<SyncedLyrics> Tag_reader::get_lyrics_flac(QString filepath)
+// {
+//     TagLib::FLAC::File file(QFile::encodeName(filepath).constData(), true);
+//     if (!file.isValid()) {
+//         qDebug() << "Invalid FLAC file!";
+//     }
 
-    TagLib::Ogg::XiphComment* comment = file.xiphComment();  // <- get Vorbis Comment block
-    if (!comment) {
-        qDebug() << "No Vorbis Comments found!";
-    }
+//     TagLib::Ogg::XiphComment* comment = file.xiphComment();  // <- get Vorbis Comment block
+//     if (!comment) {
+//         qDebug() << "No Vorbis Comments found!";
+//     }
 
-    // Iterate over the fields in the Vorbis comment
-    const auto& map = comment->fieldListMap();
-    // Look for the "LYRICS" tag
-    auto it = map.find("LYRICS");
-    if (it != map.end() && !it->second.isEmpty()) {
-        QString lyrics = QString::fromUtf8(it->second.front().to8Bit(true));
-        if (!lyrics.isEmpty()) return parse_lyrics(lyrics);
-    } else {
-        qDebug() << "No lyrics found.";
-    }
+//     // Iterate over the fields in the Vorbis comment
+//     const auto& map = comment->fieldListMap();
+//     // Look for the "LYRICS" tag
+//     auto it = map.find("LYRICS");
+//     if (it != map.end() && !it->second.isEmpty()) {
+//         QString lyrics = QString::fromUtf8(it->second.front().to8Bit(true));
+//         if (!lyrics.isEmpty()) return parse_lyrics(lyrics);
+//     } else {
+//         qDebug() << "No lyrics found.";
+//     }
 
-    return {};
-}
+//     return {};
+// }
 
 
 //This doesnt work, lyrics extraction support for more filetypes is to be added

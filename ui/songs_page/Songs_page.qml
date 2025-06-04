@@ -7,11 +7,11 @@ import Nebula.Database
 import "../utils"
 
 Rectangle {
-    anchors.fill: parent
     color: "transparent"
     clip: true
+    anchors.fill: parent
     id: root
-    property var table: Keeper.get_songs_data()
+    property var table: Keeper.ready ? Keeper.get_songs_data() : {}
 
     Songs_title {
         id: title
@@ -55,7 +55,6 @@ Rectangle {
         model: table
         delegate: Song_item {
             song_name: modelData.title
-            img_source: modelData.cover
             artist: modelData.artist
             album: modelData.album
             path: modelData.path

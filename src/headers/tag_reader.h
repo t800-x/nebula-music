@@ -32,18 +32,10 @@ public:
     explicit Tag_reader(QObject *parent = nullptr);
 
     songmodel* parse_tags(QString filepath);
-    void read(char* file);
-
+    QString get_cover(const QString filepath, const QString outBaseName);
 
 private:
-
     std::vector<QString> get_basic_tags(QString filepath);
-    QString get_cover(const QString filepath);
-    QList<SyncedLyrics> get_synced_lyrics(QString filename);
-    QList<SyncedLyrics> get_lyrics_flac(QString filepath);
-    QList<SyncedLyrics> parse_lyrics(QString lyrics_tag);
-    // std::vector<SyncedLyrics> get_lyrics_mp3(char *filename);
-
 signals:
 };
 

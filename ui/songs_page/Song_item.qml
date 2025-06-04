@@ -6,8 +6,7 @@ import Nebula.Media
 import QtQuick.Effects
 
 Rectangle {
-    required property string song_name
-    required property string img_source
+    property string song_name
     property var all_songs
     property int ind
     property bool alt

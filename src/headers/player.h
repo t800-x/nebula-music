@@ -17,6 +17,10 @@ class player : public QObject
     Q_OBJECT
 public:
     explicit player(QObject *parent = nullptr);
+    void playFile(const QString& path);
+    void moveCurrentToHistory();
+    void moveQueueTopToCurrent();
+    void loadMediaAndNotify();
 
 public slots:
     void init(songmodel *model);
@@ -33,13 +37,14 @@ public slots:
 
     QString get_title(){return mediaplayer->metaData().stringValue(QMediaMetaData::Title);}
     QString get_artist(){return mediaplayer->metaData().stringValue(QMediaMetaData::AlbumArtist);}
-    QUrl get_cover() {return QUrl::fromLocalFile(currently_playing->data(currently_playing->index(0, 0), songmodel::CoverRole).toString());}
+    QUrl get_cover() {return {};}
     int state(){return mediaplayer->playbackState();}
     qint64 get_duration(){return mediaplayer->duration();}
     qint64 get_position(){return mediaplayer->position();}
     void set_position(qint64 position){mediaplayer->setPosition(position);}
     songmodel* get_queue(){return visual_queue;}
     SyncedLyricsModel* get_synced_lyrics() {return synced_lyrics;}
+    int getCurrentSongId() {return currently_playing->data(currently_playing->index(0, 0), songmodel::SongIdRole).toInt();}
 
 private slots:
     void media_status_changed(QMediaPlayer::MediaStatus status);

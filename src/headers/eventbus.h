@@ -18,6 +18,8 @@ public slots:
     void emitLyricsButtonClicked() {emit lyricsButtonClicked();}
     void emitLyricsViewChanged() {emit lyricsViewChanged();}
     void emitNavButtonClicked(QString btn) {emit navButtonClicked(btn);}
+    void emitShowAlbum(int albumId, QString cover, QString title, QString artist) {showAlbum(albumId, cover, title, artist);}
+    void emitPopMainCanvas() {popMainCanvas();}
 
     QString getCurrentPane() {return currentPane;}
     void setCurrentPane(QString str) {currentPane = str; qDebug() << currentPane; emit currentPaneChanged();}
@@ -30,6 +32,8 @@ signals:
     void currentPaneChanged();
     void lyricsViewChanged();
     void navButtonClicked(QString btn);
+    void showAlbum(int albumId, QString cover, QString title, QString artist);
+    void popMainCanvas();
 };
 
 #endif // EVENTBUS_H

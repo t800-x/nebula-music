@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QAbstractListModel>
-#include "SyncedLyrics.h"
 
 class songmodel : public QAbstractListModel
 {
@@ -14,25 +13,23 @@ public:
     enum Roles {
         TitleRole = Qt::UserRole+1,
         PathRole,
-        CoverRole,
         ArtistRole,
         AlbumRole,
-        SyncedLyricsRole
+        SongIdRole
     };
 
     int rowCount(const QModelIndex& ={}) const override { return m_songs.size(); }
     QVariant data(const QModelIndex& idx, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
-    bool append(QString path, QString title = "", QString cover = "", QString artist = "", QString album = "", QList<SyncedLyrics> lyrics = {});
+    bool append(QString path, int songId,  QString title = "", QString artist = "", QString album = "");
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
-    bool insertAtTop(QString path, QString title = "", QString cover = "", QString artist = "", QString album = "", QList<SyncedLyrics> lyrics = {});
+    bool insertAtTop(QString path, int songId, QString title = "", QString artist = "", QString album = "");
     bool insert(int row,
-                           const QString &path,
-                           const QString &title,
-                           const QString &cover,
-                           const QString &artist,
-                           const QString &album,
-                const QList<SyncedLyrics> &lyrics = {});
+                           QString path,
+                           QString title,
+                           QString artist,
+                           QString album,
+                           int songId);
 
     // support drag-move
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
@@ -45,13 +42,11 @@ public:
 private:
     struct Song
     {
-        QString title, artist, path, cover, album;
-        QList<SyncedLyrics> syncedlyrics;
+        QString title, artist, path, album;
+        int songId;
     };
     QList<Song> m_songs;
 };
-
-Q_DECLARE_METATYPE(QList<SyncedLyrics>)
 
 
 

@@ -24,7 +24,7 @@ void songmodel::setSongs(const QVariantList &list)
                         map["artist"].toString(),
                         map["path"].toString(),
                         map["album"].toString(),
-                        map["cover"].toString()
+                        map["songId"].toInt()
         });
 
     }
@@ -65,9 +65,8 @@ QVariant songmodel::data(const QModelIndex &idx, int role) const
     case TitleRole:  return s.title;
     case ArtistRole: return s.artist;
     case PathRole:   return s.path;
-    case CoverRole:  return s.cover;
     case AlbumRole:  return s.album;
-    case SyncedLyricsRole: return QVariant::fromValue(s.syncedlyrics);
+    case SongIdRole: return s.songId;
     default:         return {};
     }
 }
@@ -78,31 +77,24 @@ QHash<int, QByteArray> songmodel::roleNames() const
     roles[TitleRole]  = "title";
     roles[ArtistRole] = "artist";
     roles[PathRole]   = "path";
-    roles[CoverRole]  = "cover";
     roles[AlbumRole]  = "album";
-    roles[SyncedLyricsRole] = "syncedlyrics";
+    roles[SongIdRole] = "songId";
     return roles;
 }
 
-bool songmodel::append(QString path, QString title, QString cover, QString artist, QString album, QList<SyncedLyrics> syncedlyrics)
+bool songmodel::append(QString path, int songId, QString title, QString artist, QString album)
 {
     beginResetModel();
 
-    // qDebug() << "Begin reset model";
     m_songs.append({
         title,
         artist,
         path,
-        cover,
         album,
-        syncedlyrics
+        songId
     });
 
-    // qDebug() << "Success";
-
     endResetModel();
-
-    // qDebug() << "End reset model";
 
     return true;
 }
@@ -120,16 +112,15 @@ bool songmodel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
-bool songmodel::insertAtTop(QString path, QString title, QString cover, QString artist, QString album, QList<SyncedLyrics> lyrics)
+bool songmodel::insertAtTop(QString path, int songId, QString title, QString artist, QString album)
 {
     beginInsertRows(QModelIndex(), 0, 0);
     m_songs.prepend({
         title,
         artist,
         path,
-        cover,
         album,
-        lyrics
+        songId
     });
     endInsertRows();
 
@@ -137,12 +128,11 @@ bool songmodel::insertAtTop(QString path, QString title, QString cover, QString 
 }
 
 bool songmodel::insert(int row,
-                       const QString &path,
-                       const QString &title,
-                       const QString &cover,
-                       const QString &artist,
-                       const QString &album,
-                       const QList<SyncedLyrics> &lyrics)
+                       QString path,
+                       QString title,
+                       QString artist,
+                       QString album,
+                       int songId)
 {
     // Validate insertion index
     int count = m_songs.size();
@@ -151,7 +141,7 @@ bool songmodel::insert(int row,
 
     beginInsertRows(QModelIndex(), row, row);
     // Insert an entry at the given position
-    m_songs.insert(row, Song{title, artist, path, cover, album, lyrics});
+    m_songs.insert(row, Song{title, artist, path, album, songId});
     endInsertRows();
 
     return true;

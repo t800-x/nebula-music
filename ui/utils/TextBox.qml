@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 
 
@@ -21,8 +22,8 @@ TextField {
 
     background: Rectangle {
         color: field.blink ? field.pcolor : field.scolor
-        radius: 7
-        border.width: blink ? 2 : 0.8
+        radius: 8
+        border.width: blink ? 1.8 : 0.8
         border.color: blink ? Consts.accent : "#3b3b3b"
     }
 

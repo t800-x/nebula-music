@@ -1,27 +1,26 @@
-#ifndef SONGFILTERPROXYMODEL_H
-#define SONGFILTERPROXYMODEL_H
+#ifndef ALBUMFILTERPROXYMODEL_H
+#define ALBUMFILTERPROXYMODEL_H
 
 #include <QObject>
 #include <QSortFilterProxyModel>
-#include "songmodel.h"
+#include "albummodel.h"
 
-class SongFilterProxyModel : public QSortFilterProxyModel
+class AlbumFilterProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
     Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
     Q_PROPERTY(int  sortRole    READ sortRole    WRITE setSortRole   NOTIFY sortRoleChanged)
-
 public:
-    explicit SongFilterProxyModel(QObject* parent = nullptr);
+    explicit AlbumFilterProxyModel(QObject *parent = nullptr);
 
-    QString filterText() const { return m_filterText; }
+    Q_INVOKABLE QString filterText() const { return m_filterText; }
     Q_INVOKABLE void setFilterText(const QString &text);
 
     int sortRole() const { return QSortFilterProxyModel::sortRole(); }
     void setSortRole(int role);
 
-public slots:
-    songmodel* toSongModel(QObject* parent);
+// public slots:
+    // AlbumModel* toAlbumModel(QObject* parent);
 
 signals:
     void filterTextChanged();
@@ -35,4 +34,4 @@ private:
     QString m_filterText;
 };
 
-#endif // SONGFILTERPROXYMODEL_H
+#endif // ALBUMFILTERPROXYMODEL_H

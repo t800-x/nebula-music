@@ -3,6 +3,7 @@ import QtQuick.Controls.Material
 import "qrc:/qt/qml/nebula-music/Consts.js" as Consts
 import Nebula.Media
 import QtQuick.Effects
+import Nebula.Database
 
 Rectangle {
     id: root
@@ -12,13 +13,12 @@ Rectangle {
 
     Rectangle {
         id: cover_container
-        height: 40
-        width: 45
         color: "transparent"
-        anchors{
+        height: parent.height
+        width: height
+        anchors {
             left: parent.left
             verticalCenter: parent.verticalCenter
-            leftMargin: 5
             right: data_container.left
         }
 
@@ -38,34 +38,65 @@ Rectangle {
             anchors.fill: cover
             source: cover
 
-            maskEnabled: true                           // Turn on masking :contentReference[oaicite:4]{index=4}
-            maskSource: roundedMask                      // Use our rectangle as mask :contentReference[oaicite:5]{index=5}
+            maskEnabled: true
+            maskSource: roundedMask
 
             // Anti-aliasing tweaks (optional but recommended)
-            maskThresholdMin: 0.5                        // Sharpness threshold :contentReference[oaicite:6]{index=6}
+            maskThresholdMin: 0.5
             maskSpreadAtMin: 1.0
 
             visible: false
         }
 
-        // Mask definition
+        // Mask definition: only left corners rounded
         Item {
             id: roundedMask
             width: cover.width
             height: cover.height
-            visible: false                               // Hide mask itself
+            visible: false
 
-            layer.enabled: true                          // Required for maskSource :contentReference[oaicite:8]{index=8}
-            layer.smooth: true                           // Smooth out edges :contentReference[oaicite:9]{index=9}
+            layer.enabled: true
+            layer.smooth: true
 
-            Rectangle {
-                width: parent.width
-                height: parent.height
-                radius: 5                               // Desired corner radius :contentReference[oaicite:10]{index=10}
-                color: "#ff000000"                       // Only alpha channel is used for masking
+            Canvas {
+                id: maskCanvas
+                anchors.fill: parent
+                onPaint: {
+                    var ctx = getContext("2d");
+                    ctx.reset();
+
+                    var w = width;
+                    var h = height;
+                    var r = 5; // corner radius
+
+                    // Clear previous
+                    ctx.clearRect(0, 0, w, h);
+
+                    // Draw path with only left corners rounded
+                    ctx.beginPath();
+                    ctx.moveTo(r, 0);
+                    ctx.lineTo(w, 0);
+                    ctx.lineTo(w, h);
+                    ctx.lineTo(r, h);
+                    // bottom‐left corner:
+                    ctx.quadraticCurveTo(0, h, 0, h - r);
+                    ctx.lineTo(0, r);
+                    // top‐left corner:
+                    ctx.quadraticCurveTo(0, 0, r, 0);
+                    ctx.closePath();
+
+                    // Fill with opaque black (only alpha matters for mask)
+                    ctx.fillStyle = "#ff000000";
+                    ctx.fill();
+                }
+
+                // Redraw whenever size changes
+                onWidthChanged: requestPaint()
+                onHeightChanged: requestPaint()
             }
         }
     }
+
 
     Rectangle {
         id: data_container
@@ -156,7 +187,7 @@ Rectangle {
 
                 title.text = MediaPlayer.get_title()
                 artist.text = MediaPlayer.get_artist()
-                cover.source = MediaPlayer.get_cover()
+                cover.source = Keeper.getCover(MediaPlayer.getCurrentSongId())
                 console.log(cover.source)
             }
 

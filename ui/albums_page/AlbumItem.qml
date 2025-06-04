@@ -1,12 +1,16 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
+import Nebula.Events
+import Nebula.Database
+import Nebula.Media
 
 Rectangle {
     id: root
-    property string cover_img: "qrc:/qt/qml/nebula-music/icons/placeholder.png"
     property string title: "unknown"
     property string artist: "unknown"
+    property int albumId: -1
+    property string cover_img: Keeper.getAlbumCover(albumId)
     color: "transparent"
 
     Column {
@@ -41,6 +45,8 @@ Rectangle {
                         margins: 5
                     }
 
+                    onClicked: MediaPlayer.play(Keeper.get_album_songs(root.albumId, root).toSongModel(root), 0)
+
                     glyph: "\uF488"
                 }
 
@@ -60,11 +66,14 @@ Rectangle {
                 // }
             }
 
+            HoverHandler {
+                onHoveredChanged: cover_container.hovered = hovered
+            }
+
             MouseArea {
                 anchors.fill: parent
-                hoverEnabled: true
-                onEntered: cover_container.hovered = true
-                onExited: cover_container.hovered = false
+
+                onClicked: EventBus.emitShowAlbum(root.albumId, root.cover_img, root.title, root.artist)
             }
 
             Image {
@@ -117,14 +126,20 @@ Rectangle {
             text: title
             font.pointSize: 12
             color: "white"
-            anchors.left: parent.left
+            anchors.left: cover_container.left
+            wrapMode: Text.NoWrap
+            elide: Text.ElideRight
+            width: cover_container.width
         }
 
         Label {
             text: artist
             font.pointSize: 10
             color: Qt.rgba(1, 1, 1, 0.5)
-            anchors.left: parent.left
+            anchors.left: cover_container.left
+            wrapMode: Text.NoWrap
+            elide: Text.ElideRight
+            width: cover_container.width
         }
     }
 }

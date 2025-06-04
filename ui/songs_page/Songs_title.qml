@@ -20,8 +20,8 @@ Rectangle {
 
     TextBox {
         id: search
-        height: 40
-        width: 100
+        height: 32
+        width: 200
 
         anchors {
             right: parent.right

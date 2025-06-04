@@ -8,11 +8,13 @@ Rectangle {
     property bool pressed: false
     property bool hovered: false
     property bool active: false
+    property real xWidth: 1.8
+    property real xHeight: 1.25
     signal clicked()
 
     radius: 6
-    width: btn_text.implicitWidth * 1.5
-    height: btn_text.implicitHeight * 1.25
+    width: btn_text.implicitWidth * xWidth
+    height: btn_text.implicitHeight * xHeight
     anchors.verticalCenter: parent.verticalCenter
     clip: true
 

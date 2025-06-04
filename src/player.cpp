@@ -13,16 +13,13 @@
 #include <QTextStream>
 #include <QRegularExpression>
 
-
 player::player(QObject *parent)
     : QObject{parent}
 {
-
 }
 
 void player::init(songmodel *model)
 {
-    //Initialize media player
     mediaplayer = new QMediaPlayer(this);
     output = new QAudioOutput(this);
     connect(mediaplayer, &QMediaPlayer::playbackStateChanged, this, &player::player_state_changed);
@@ -37,11 +34,63 @@ void player::init(songmodel *model)
     manual_idx = 0;
 
     synced_lyrics = new SyncedLyricsModel(this);
-
-    //media status signal
     connect(mediaplayer, &QMediaPlayer::mediaStatusChanged, this, &player::media_status_changed);
 
     emit player_ready();
+}
+
+// Helper function to play files with MP3 workaround
+void player::playFile(const QString& path)
+{
+    mediaplayer->setSource(QUrl::fromLocalFile(path));
+    if (path.endsWith(".mp3")) {
+        mediaplayer->play();
+        wait(500);
+        set_position(1);
+    } else {
+        mediaplayer->play();
+    }
+}
+
+// Helper to move current song to history
+void player::moveCurrentToHistory()
+{
+    if (currently_playing->rowCount() == 0) return;
+
+    QModelIndex idx = currently_playing->index(0, 0);
+    history->append(
+        currently_playing->data(idx, songmodel::PathRole).toString(),
+        currently_playing->data(idx, songmodel::SongIdRole).toInt(),
+        currently_playing->data(idx, songmodel::TitleRole).toString(),
+        currently_playing->data(idx, songmodel::ArtistRole).toString(),
+        currently_playing->data(idx, songmodel::AlbumRole).toString()
+        );
+}
+
+// Helper to move top of queue to current
+void player::moveQueueTopToCurrent()
+{
+    if (visual_queue->rowCount() == 0) return;
+
+    QModelIndex idx = visual_queue->index(0, 0);
+    currently_playing->clear();
+    currently_playing->append(
+        visual_queue->data(idx, songmodel::PathRole).toString(),
+        visual_queue->data(idx, songmodel::SongIdRole).toInt(),
+        visual_queue->data(idx, songmodel::TitleRole).toString(),
+        visual_queue->data(idx, songmodel::ArtistRole).toString(),
+        visual_queue->data(idx, songmodel::AlbumRole).toString()
+        );
+    visual_queue->removeRows(0, 1);
+}
+
+// Unified media loading sequence
+void player::loadMediaAndNotify()
+{
+    const QString path = currently_playing->data(currently_playing->index(0, 0), songmodel::PathRole).toString();
+    playFile(path);
+    load_synced_lyrics();
+    emit songChanged();
 }
 
 void player::play(QObject* m_table, int index)
@@ -50,50 +99,23 @@ void player::play(QObject* m_table, int index)
     set_queue(table, index);
     current_index = 0;
 
-    //Move next item to currently playing
-    auto idx = playing_next->index(current_index, 0);
-
-    auto path = playing_next->data(idx, songmodel::PathRole).toString();
-    QString title = playing_next->data(idx, songmodel::TitleRole).toString();
-    QString artist = playing_next->data(idx, songmodel::ArtistRole).toString();
-    QString album = playing_next->data(idx, songmodel::AlbumRole).toString();
-    QString cover = playing_next->data(idx, songmodel::CoverRole).toString();
-
-    currently_playing->clear();
-    currently_playing->append(path, title, cover, artist, album);
-
-    mediaplayer->setSource(QUrl::fromLocalFile(path));
-    //mp3 files dont seem to play nice
-    if (path.endsWith(".mp3"))
-    {
-        mediaplayer->play();
-        wait(500);
-        set_position(1);
-    }else {
-        mediaplayer->play();
-    }
-
-    load_synced_lyrics();
-    songChanged();
-
-    visual_queue->removeRows(0, 1);
-
+    moveQueueTopToCurrent();
+    loadMediaAndNotify();
 }
 
 void player::move(int from, int to)
 {
     visual_queue->move(from, to);
-
-    int offset = history->rowCount() + currently_playing->rowCount();
-    playing_next->move(offset + from, offset + to);
+    playing_next->move(history->rowCount() + currently_playing->rowCount() + from,
+                       history->rowCount() + currently_playing->rowCount() + to);
 }
 
 void player::plause()
 {
-    if ((mediaplayer->playbackState() == 0) || (mediaplayer->playbackState() == 2))
-    {
+    if (mediaplayer->playbackState() == QMediaPlayer::StoppedState ||
+        mediaplayer->playbackState() == QMediaPlayer::PausedState) {
         mediaplayer->play();
-    }else {
+    } else {
         mediaplayer->pause();
     }
 }
@@ -101,203 +123,103 @@ void player::plause()
 void player::next()
 {
     current_index++;
-    if (current_index < playing_next -> rowCount())
-    {
-        //Move currently playing to history
-        auto index = currently_playing->index(0,0);
+    if (current_index >= playing_next->rowCount()) return;
 
-        auto path = currently_playing->data(index, songmodel::PathRole).toString();
-        QString title = currently_playing->data(index, songmodel::TitleRole).toString();
-        QString artist = currently_playing->data(index, songmodel::ArtistRole).toString();
-        QString album = currently_playing->data(index, songmodel::AlbumRole).toString();
-        QString cover = currently_playing->data(index, songmodel::CoverRole).toString();
-
-        history->append(path, title, cover, artist, album);
-
-        //Move top item of visual queue to currently playing
-        index = visual_queue->index(0,0);
-
-        path = visual_queue->data(index, songmodel::PathRole).toString();
-        title = visual_queue->data(index, songmodel::TitleRole).toString();
-        artist = visual_queue->data(index, songmodel::ArtistRole).toString();
-        album = visual_queue->data(index, songmodel::AlbumRole).toString();
-        cover = visual_queue->data(index, songmodel::CoverRole).toString();
-
-        currently_playing->clear();
-        currently_playing->append(path, title, cover, artist, album);
-
-        visual_queue->removeRows(0,1);
-
-        mediaplayer->setSource(QUrl::fromLocalFile(path));
-        //mp3 files dont seem to play nice
-        if (path.endsWith(".mp3"))
-        {
-            mediaplayer->play();
-            wait(500);
-            set_position(1);
-        }else {
-            mediaplayer->play();
-        }
-        load_synced_lyrics();
-        emit songChanged();
-    }
+    moveCurrentToHistory();
+    moveQueueTopToCurrent();
+    loadMediaAndNotify();
 }
 
 void player::prev()
 {
-    if (playing_next -> rowCount() != 0)
-    {
+    if (playing_next->rowCount() == 0 || history->rowCount() == 0) return;
 
-        current_index--;
-        if (history -> rowCount() == 0)
-        {
-            return;
-        }
+    current_index--;
 
-        //Move Currently playing to top of visual queue
-        auto index = currently_playing->index(0, 0);
-        auto path = currently_playing->data(index, songmodel::PathRole).toString();
-        if (path.isEmpty()) return;
-        QString title = currently_playing->data(index, songmodel::TitleRole).toString();
-        QString artist = currently_playing->data(index, songmodel::ArtistRole).toString();
-        QString album = currently_playing->data(index, songmodel::AlbumRole).toString();
-        QString cover = currently_playing->data(index, songmodel::CoverRole).toString();
+    // Move current to top of queue
+    QModelIndex idx = currently_playing->index(0, 0);
+    visual_queue->insertAtTop(
+        currently_playing->data(idx, songmodel::PathRole).toString(),
+        currently_playing->data(idx, songmodel::SongIdRole).toInt(),
+        currently_playing->data(idx, songmodel::TitleRole).toString(),
+        currently_playing->data(idx, songmodel::ArtistRole).toString(),
+        currently_playing->data(idx, songmodel::AlbumRole).toString()
+        );
 
-        visual_queue->insertAtTop(path, title, cover, artist, album);
+    // Move last history to current
+    idx = history->index(history->rowCount() - 1, 0);
+    currently_playing->clear();
+    currently_playing->append(
+        history->data(idx, songmodel::PathRole).toString(),
+        history->data(idx, songmodel::SongIdRole).toInt(),
+        history->data(idx, songmodel::TitleRole).toString(),
+        history->data(idx, songmodel::ArtistRole).toString(),
+        history->data(idx, songmodel::AlbumRole).toString()
+        );
+    history->removeRows(history->rowCount() - 1, 1);
 
-        //Move last item of history to currently playing
-        index = history->index(history->rowCount() - 1, 0);
-
-        path = history->data(index, songmodel::PathRole).toString();
-        if(path.isEmpty()) return;
-        title = history->data(index, songmodel::TitleRole).toString();
-        artist = history->data(index, songmodel::ArtistRole).toString();
-        album = history->data(index, songmodel::AlbumRole).toString();
-        cover = history->data(index, songmodel::CoverRole).toString();
-
-        currently_playing->clear();
-        currently_playing->append(path, title, cover, artist, album);
-        history->removeRows(history->rowCount() - 1, 1);
-
-        mediaplayer->setSource(QUrl::fromLocalFile(path));
-        //mp3 files dont seem to play nice
-        if (path.endsWith(".mp3"))
-        {
-            set_position(1);
-            mediaplayer->play();
-        }else {
-            mediaplayer->play();
-        }
-
-        load_synced_lyrics();
-        emit songChanged();
-    }
+    loadMediaAndNotify();
 }
 
 void player::play_next(const QJSValue& data)
 {
-    auto path = data.property("path").toString();
-    QString title = data.property("title").toString();
-    QString artist = data.property("artist").toString();
-    QString album = data.property("album").toString();
-    QString cover = data.property("cover").toString();
+    const QString path = data.property("path").toString();
+    const int songId = data.property("songId").toInt();
+    const QString title = data.property("title").toString();
+    const QString artist = data.property("artist").toString();
+    const QString album = data.property("album").toString();
 
-    visual_queue->insertAtTop(path, title, cover, artist, album);
-    int offset = history->rowCount() + currently_playing->rowCount();
-    playing_next->insert(offset, path, title, cover, artist, album);
+
+    visual_queue->insertAtTop(path, songId, title, artist, album);
+    const int offset = history->rowCount() + currently_playing->rowCount();
+    playing_next->insert(offset, path, title, artist, album,  songId);
     manual_idx = offset;
 }
 
 void player::add_to_queue(const QJSValue& data)
 {
-    auto path = data.property("path").toString();
-    QString title = data.property("title").toString();
-    QString artist = data.property("artist").toString();
-    QString album = data.property("album").toString();
-    QString cover = data.property("cover").toString();
+    const QString path = data.property("path").toString();
+    const int songId = data.property("songId").toInt();
+    const QString title = data.property("title").toString();
+    const QString artist = data.property("artist").toString();
+    const QString album = data.property("album").toString();
 
-    int offset = history->rowCount() + currently_playing->rowCount();
-    visual_queue->insert((manual_idx + 1)- offset, path, title, cover, artist, album);
-    playing_next->insert(manual_idx + 1, path, title, cover, artist, album);
+    const int offset = history->rowCount() + currently_playing->rowCount();
+    const int insertPos = (manual_idx + 1) - offset;
+    visual_queue->insert(insertPos, path, title, artist, album, songId);
+    playing_next->insert(manual_idx + 1, path, title, artist, album, songId);
     manual_idx++;
 }
 
 bool player::isInFrame(unsigned int lyricTimestamp, int idx)
 {
-    qint64 currentPos = get_position();
+    const qint64 currentPos = get_position();
+    const int lyricCount = synced_lyrics->rowCount();
 
-    // No lyrics case
-    if (synced_lyrics->rowCount() <= 0) return false;
+    if (lyricCount <= 0) return false;
 
-    // First lyric: active from start to next lyric
     if (idx == 0) {
-        if (synced_lyrics->rowCount() > 1) {
-            unsigned int nextTimestamp = synced_lyrics->data(
-                                                          synced_lyrics->index(1, 0),
-                                                          SyncedLyricsModel::Timestamp_msRole
-                                                          ).toUInt();
-            return currentPos >= lyricTimestamp && currentPos < nextTimestamp;
-        }
+        return lyricCount > 1 ?
+                   (currentPos >= lyricTimestamp && currentPos < synced_lyrics->data(synced_lyrics->index(1, 0), SyncedLyricsModel::Timestamp_msRole).toUInt()) :
+                   currentPos >= lyricTimestamp;
+    }
+
+    if (idx == lyricCount - 1) {
         return currentPos >= lyricTimestamp;
     }
-    // Last lyric: active from its timestamp onward
-    else if (idx == synced_lyrics->rowCount() - 1) {
-        return currentPos >= lyricTimestamp;
-    }
-    // Middle lyrics: active between current and next timestamp
-    else {
-        unsigned int nextTimestamp = synced_lyrics->data(
-                                                      synced_lyrics->index(idx + 1, 0),
-                                                      SyncedLyricsModel::Timestamp_msRole
-                                                      ).toUInt();
-        return currentPos >= lyricTimestamp && currentPos < nextTimestamp;
-    }
+
+    const unsigned int nextTimestamp = synced_lyrics->data(synced_lyrics->index(idx + 1, 0), SyncedLyricsModel::Timestamp_msRole).toUInt();
+    return currentPos >= lyricTimestamp && currentPos < nextTimestamp;
 }
 
 void player::media_status_changed(QMediaPlayer::MediaStatus status)
 {
-    if (status == QMediaPlayer::EndOfMedia)
-    {
+    if (status == QMediaPlayer::EndOfMedia) {
         current_index++;
-        if (current_index < playing_next -> rowCount())
-        {
-            //Move currently playing to history
-            auto index = currently_playing->index(0,0);
-
-            auto path = currently_playing->data(index, songmodel::PathRole).toString();
-            QString title = currently_playing->data(index, songmodel::TitleRole).toString();
-            QString artist = currently_playing->data(index, songmodel::ArtistRole).toString();
-            QString album = currently_playing->data(index, songmodel::AlbumRole).toString();
-            QString cover = currently_playing->data(index, songmodel::CoverRole).toString();
-
-            history->append(path, title, cover, artist, album);
-
-            //Move top item of visual queue to currently playing
-            index = visual_queue->index(0,0);
-
-            path = visual_queue->data(index, songmodel::PathRole).toString();
-            title = visual_queue->data(index, songmodel::TitleRole).toString();
-            artist = visual_queue->data(index, songmodel::ArtistRole).toString();
-            album = visual_queue->data(index, songmodel::AlbumRole).toString();
-            cover = visual_queue->data(index, songmodel::CoverRole).toString();
-
-            currently_playing->clear();
-            currently_playing->append(path, title, cover, artist, album);
-
-            visual_queue->removeRows(0,1);
-
-            mediaplayer->setSource(QUrl::fromLocalFile(path));
-            //mp3 files dont seem to play nice
-            if (path.endsWith(".mp3"))
-            {
-                mediaplayer->play();
-                wait(500);
-                set_position(1);
-            }else {
-                mediaplayer->play();
-            }
-            load_synced_lyrics();
-            emit songChanged();
+        if (current_index < playing_next->rowCount()) {
+            moveCurrentToHistory();
+            moveQueueTopToCurrent();
+            loadMediaAndNotify();
         }
     }
 }
@@ -308,102 +230,78 @@ void player::set_queue(songmodel* table, int index)
     visual_queue->clear();
     history->clear();
     manual_idx = 0;
-    for (int i = index; i<table->rowCount(); i++)
-    {
+
+    for (int i = index; i < table->rowCount(); i++) {
         QModelIndex idx = table->index(i, 0);
-
-        QString title = table->data(idx, songmodel::TitleRole).toString();
-        QString path = table->data(idx, songmodel::PathRole).toString();
-        QString artist = table->data(idx, songmodel::ArtistRole).toString();
-        QString album = table->data(idx, songmodel::AlbumRole).toString();
-        QString cover = table->data(idx, songmodel::CoverRole).toString();
-
-        if (title.isEmpty())
-        {
-            qDebug()<< "Empty";
-        }
-
-
-        playing_next->append(path, title, cover, artist, album);
-        visual_queue->append(path, title, cover, artist, album);
+        playing_next->append(
+            table->data(idx, songmodel::PathRole).toString(),
+            table->data(idx, songmodel::SongIdRole).toInt(),
+            table->data(idx, songmodel::TitleRole).toString(),
+            table->data(idx, songmodel::ArtistRole).toString(),
+            table->data(idx, songmodel::AlbumRole).toString()
+            );
+        visual_queue->append(
+            table->data(idx, songmodel::PathRole).toString(),
+            table->data(idx, songmodel::SongIdRole).toInt(),
+            table->data(idx, songmodel::TitleRole).toString(),
+            table->data(idx, songmodel::ArtistRole).toString(),
+            table->data(idx, songmodel::AlbumRole).toString()
+            );
     }
 }
 
 void player::play_current()
 {
-
-    QModelIndex index = currently_playing->index(0, 0);
-    QString path = currently_playing->data(index, songmodel::PathRole).toString();
-    QString title = currently_playing->data(index, songmodel::TitleRole).toString();
-    QString artist = currently_playing->data(index, songmodel::ArtistRole).toString();
-    QString album = currently_playing->data(index, songmodel::AlbumRole).toString();
-    QString cover = currently_playing->data(index, songmodel::CoverRole).toString();
-
-    if (!path.isEmpty())
-    {
-        history->append(path, title, cover, artist, album);
+    if (currently_playing->rowCount() > 0) {
+        QModelIndex idx = currently_playing->index(0, 0);
+        history->append(
+            currently_playing->data(idx, songmodel::PathRole).toString(),
+            currently_playing->data(idx, songmodel::SongIdRole).toInt(),
+            currently_playing->data(idx, songmodel::TitleRole).toString(),
+            currently_playing->data(idx, songmodel::ArtistRole).toString(),
+            currently_playing->data(idx, songmodel::AlbumRole).toString()
+            );
     }
 
-    index = visual_queue->index(0, 0);
-    path = visual_queue->data(index, songmodel::PathRole).toString();
-    title = visual_queue->data(index, songmodel::TitleRole).toString();
-    artist = visual_queue->data(index, songmodel::ArtistRole).toString();
-    album = visual_queue->data(index, songmodel::AlbumRole).toString();
-    cover = visual_queue->data(index, songmodel::CoverRole).toString();
-    currently_playing->clear();
-    currently_playing->append(path, title, cover, artist, album);
-
-    mediaplayer->setSource(QUrl::fromLocalFile(path));
-    //mp3 files dont seem to play nice
-    if (path.endsWith(".mp3"))
-    {
-        mediaplayer->play();
-        wait(500);
-        set_position(1);
-    }else {
-        mediaplayer->play();
+    moveQueueTopToCurrent();
+    if (currently_playing->rowCount() > 0) {
+        loadMediaAndNotify();
     }
-    load_synced_lyrics();
-    emit songChanged();
 }
 
 void player::wait(int milliseconds)
 {
     QEventLoop loop;
     QTimer::singleShot(milliseconds, &loop, &QEventLoop::quit);
-    loop.exec(); // Blocks here until the timer calls quit()
+    loop.exec();
 }
 
 void player::load_synced_lyrics()
 {
     synced_lyrics->clear();
+    if (currently_playing->rowCount() == 0) return;
+
     const QString path = currently_playing->data(currently_playing->index(0, 0), songmodel::PathRole).toString();
-    if (path.isEmpty() || path.isNull()) return;
-    const QString filepath = path.left(path.lastIndexOf('.')) + ".lrc";
+    if (path.isEmpty()) return;
 
-    QFile file(filepath);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open file:" << file.errorString();
-        return;
-    }
+    const QString lrcPath = path.left(path.lastIndexOf('.')) + ".lrc";
+    QFile file(lrcPath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
 
     QTextStream in(&file);
+    QRegularExpression regex(R"(\[(\d+):(\d+)(?:\.(\d+))?\](.*))");
+
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegularExpression regex(R"(\[(\d+):(\d+)(?:\.(\d+))?\](.*))");
         QRegularExpressionMatch match = regex.match(line);
+        if (!match.hasMatch()) continue;
 
-        if (match.hasMatch()) {
-            int minutes = match.captured(1).toInt();
-            int seconds = match.captured(2).toInt();
-            int milliseconds = match.captured(3).isEmpty() ? 0 : match.captured(3).left(3).rightJustified(3, '0').toInt();
-            QString lyric = match.captured(4).trimmed();
+        int minutes = match.captured(1).toInt();
+        int seconds = match.captured(2).toInt();
+        int milliseconds = match.captured(3).left(3).rightJustified(3, '0').toInt();
+        QString lyric = match.captured(4).trimmed();
 
-            int totalMs = minutes * 60000 + seconds * 1000 + milliseconds;
-            synced_lyrics->append(lyric, totalMs);
-        }
+        synced_lyrics->append(lyric, minutes * 60000 + seconds * 1000 + milliseconds);
     }
-
     file.close();
 }

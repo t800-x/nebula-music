@@ -12,7 +12,7 @@ Rectangle {
 
     Column {
         id: nav_column
-        spacing: 10
+        spacing: 4
         width: parent.width
         height: parent.height
 
@@ -31,7 +31,7 @@ Rectangle {
 
         Item {
             width: 1
-            height: 40
+            height: 46
         }
 
         Navbar_button {

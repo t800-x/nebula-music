@@ -11,6 +11,7 @@ Rectangle {
 
     id: root
     property var song_model: MediaPlayer.get_queue()
+    anchors.fill: parent
     property string name: "Queue"
     color: Consts.player_color
 

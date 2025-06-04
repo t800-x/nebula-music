@@ -37,20 +37,18 @@ songmodel *SongFilterProxyModel::toSongModel(QObject *parent)
         QModelIndex pidx = index(row, 0);
 
         // Fetch each role’s data
-        QString path, title, cover, artist, album;
-        QList<SyncedLyrics> lyrics;
+        QString path, title, artist, album;
+        int songId;
 
         // You know your Roles enum, so:
         path   = data(pidx, songmodel::PathRole).   toString();
+        songId = data(pidx, songmodel::SongIdRole). toInt();
         title  = data(pidx, songmodel::TitleRole).  toString();
-        cover  = data(pidx, songmodel::CoverRole).  toString();
         artist = data(pidx, songmodel::ArtistRole). toString();
         album  = data(pidx, songmodel::AlbumRole).  toString();
-        lyrics = data(pidx, songmodel::SyncedLyricsRole)
-                     .value<QList<SyncedLyrics>>();
 
         // 3) Append into the new SongModel
-        filtered->append(path, title, cover, artist, album, lyrics);
+        filtered->append(path, songId, title, artist, album);
     }
 
     return filtered;

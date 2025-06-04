@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import Nebula.Events
+import Nebula.Database
 
 import "ui/nav"
 import "ui/utils"
@@ -26,9 +27,16 @@ ApplicationWindow {
         source: "icons/CupertinoIcons.ttf"
     }
 
+    // Component.onCompleted: {
+    //     Keeper.init()
+    // }
+
     Item {
         id: allContent
         anchors.fill: parent
+
+
+
 
         Rectangle {
             id: nav_container
@@ -82,9 +90,30 @@ ApplicationWindow {
                 right: sidepanel.left
             }
 
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: !Keeper.ready
+            }
+
             Component.onCompleted: {
                 canvas.push("ui/songs_page/Songs_page.qml")
             }
+        }
+
+        Loader {
+            id: albumPageLoader
+            source: "qrc:/qt/qml/nebula-music/ui/albums_page/AlbumsPage.qml"
+            active: true
+            visible: false
+            asynchronous: true
+        }
+
+        Loader {
+            id: songsPageLoader
+            source: "qrc:/qt/qml/nebula-music/ui/songs_page/Songs_page.qml"
+            active: true
+            visible: false
+            asynchronous: true
         }
 
         StackView {
@@ -161,8 +190,28 @@ ApplicationWindow {
             }
 
             function onNavButtonClicked(btn) {
-                if (btn === "Songs") canvas.replace("ui/songs_page/Songs_page.qml")
-                else if (btn === "Albums") canvas.replace("ui/albums_page/AlbumsPage.qml")
+                if (btn === "Songs") canvas.replace(songsPageLoader.item)
+                else if (btn === "Albums") {
+                    canvas.pop()
+                    canvas.replace(albumPageLoader.item)
+                }
+            }
+
+            function onShowAlbum(albumId, cover, title, artist) {
+                // → Push by URL and properties directly:
+                canvas.push(
+                            "ui/albums_page/AlbumView.qml",
+                            {
+                                albumId: albumId,
+                                cover_img: cover,
+                                title: title,
+                                artist: artist
+                            }
+                            );
+            }
+
+            function onPopMainCanvas() {
+                canvas.pop()
             }
         }
     }

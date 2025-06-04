@@ -6,6 +6,7 @@
 #include <QAbstractNativeEventFilter>
 #include <QSurfaceFormat>
 #include <QFile>
+#include <QElapsedTimer>
 
 #include "headers/player.h"
 #include "headers/database.h"
@@ -112,6 +113,9 @@ void get_folders(database* db);
 
 int main(int argc, char *argv[])
 {
+    QElapsedTimer timer;
+    timer.start();
+
     QGuiApplication app(argc, argv);
 
     player *mediaplayer = new player();
@@ -120,10 +124,8 @@ int main(int argc, char *argv[])
     eventbus* bus = new eventbus();
 
     QQmlApplicationEngine engine;
-
-    db->init();
     mediaplayer->init(queuemodel);
-    get_folders(db);
+    db->init();
 
 
     qmlRegisterSingletonInstance<player>("Nebula.Media", 1, 0, "MediaPlayer", mediaplayer);
@@ -152,29 +154,15 @@ int main(int argc, char *argv[])
     HWND hwnd = reinterpret_cast<HWND>(rootWindow->winId());
     if (IsWindow(hwnd)) {
         // Example: dark gray background with white text:
-        QColor bg    = QColor(30, 30, 30);   // a dark gray (almost black)
+        QColor bg    = QColor(41, 41, 41);   // a dark gray (almost black)
         QColor text  = QColor(255, 255, 255); // pure white
 
         setTitleBarColor(hwnd, bg, text);
     }
 #endif
 
+    qDebug() << "Window creation time: " << timer.elapsed() << " ms.";
+
     return app.exec();
 }
 
-void get_folders(database* db)
-{
-    QString path = "mediafolders.txt";
-    QFile file(path);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open file:" << file.errorString();
-        return;
-    }
-
-    QTextStream in(&file);
-    while(!in.atEnd())
-    {
-        db->add_to_library(in.readLine());
-    }
-}

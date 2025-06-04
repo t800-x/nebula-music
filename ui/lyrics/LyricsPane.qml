@@ -10,6 +10,7 @@ Rectangle {
     id: root
     property string name: "LyricsPane"
     property var lyrics: MediaPlayer.get_synced_lyrics()
+    anchors.fill: parent
     color: Consts.player_color
 
     Behavior on width {
